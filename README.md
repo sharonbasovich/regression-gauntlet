@@ -31,7 +31,7 @@ gauntlet/verify.sh          Builds every bug branch and proves the regression is
 gauntlet/score.py           Scores a tester report against the manifest
 gauntlet/report.schema.json JSON schema of the report; gauntlet/sample-report.json is an illustrative example
 gauntlet/seed/              The scripts that generated the branches/PRs/manifest (reproducible)
-.github/workflows/ci.yml    Lint + type-check + build on every push/PR; e2e baseline on pushes to main
+docs/ci/github-actions.yml  Optional GitHub Actions workflow (lint/type/build per PR, e2e on main); not enabled by default, see Limitations
 docs/screenshots/           Screenshots at the three widths
 ```
 
@@ -173,7 +173,7 @@ The proof for BUG-15 (LCP) throttles the network through CDP and is Chromium-onl
 - **Each PR has exactly one intended regression**, but a diff can have incidental side effects (e.g. BUG-06 also leaves an `aria-hidden` panel in the DOM). The manifest describes the intended, user-visible effect.
 - **Some bugs cannot be fully proven in headless Playwright.** BUG-08 (iOS focus zoom) is proven only by its root cause (input font-size < 16 px); BUG-15 is proven by LCP under CDP throttling rather than on a real 3G connection.
 - **Browser-specific bugs rely on current engine behaviour** (`requestIdleCallback` absent in WebKit, `scrollIntoViewIfNeeded` absent in Firefox as of the Playwright builds used). If an engine ships the API, the proof will start passing on the branch — re-run `verify.sh`.
-- **PR CI runs lint/type-check/build only.** The e2e baseline runs on pushes to `main`, otherwise a red check would leak which PRs contain a bug. (At the time of writing GitHub Actions could not run on this repository because the owning account was billing-locked; the workflow is in place and runs unchanged once that is lifted.)
+- **No CI runs on this repository by default.** `verify.sh` is the source of truth and its results are committed (`gauntlet/VERIFY-RESULTS.md`). A ready-to-use GitHub Actions workflow lives in `docs/ci/github-actions.yml` (lint/type-check/build on PRs; the e2e baseline only on pushes to `main`, so a red check cannot leak which PRs contain a bug) — copy it to `.github/workflows/` to enable it on a fork.
 - **The control set is small (5).** Precision estimates from five negatives are coarse; `control/04` is a deliberate visual change to see whether a tester flags harmless visual diffs.
 - **Scoring is PR-level.** The per-device table credits a device only when the tester names it, so a tool that reports without device attribution will score low there by construction.
 
