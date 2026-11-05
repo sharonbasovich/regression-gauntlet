@@ -89,7 +89,7 @@ export function Header({ user }: { user: SessionUser | null }) {
             </svg>
             <span className="sr-only whitespace-nowrap text-sm sm:not-sr-only">{user ? `${user.name.split(" ")[0]}’s account` : "Log in"}</span>
           </Link>
-          <button type="button" onClick={openDrawer} className="btn-ghost relative px-2" aria-label={`Cart, ${count} item${count === 1 ? "" : "s"}`} data-testid="cart-button">
+          <button type="button" onClick={openDrawer} className="btn-ghost relative px-2" data-testid="cart-button">
             <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M3 4h2l2.4 11.2a2 2 0 002 1.6h8.8a2 2 0 002-1.6L21.5 8H6" />
               <circle cx="9.5" cy="20" r="1.2" />
