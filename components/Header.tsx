@@ -51,7 +51,7 @@ export function Header({ user }: { user: SessionUser | null }) {
   }, [menuOpen]);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-line bg-white/95 backdrop-blur">
+    <header className="sticky top-0 z-30 border-b border-line bg-white">
       <a href="#main" className="sr-only-focusable fixed left-2 top-2 z-50 rounded bg-ink px-3 py-2 text-white">
         Skip to content
       </a>

@@ -12,6 +12,8 @@ test.describe("Navigation", () => {
     await toggle.click();
     const menu = page.getByTestId("mobile-menu");
     await expect(menu).toBeVisible();
+    const panel = await menu.boundingBox();
+    expect(panel!.height, "menu panel should cover most of the viewport").toBeGreaterThan(page.viewportSize()!.height * 0.5);
     await expect(toggle).toHaveAttribute("aria-expanded", "true");
 
     await page.keyboard.press("Escape");
