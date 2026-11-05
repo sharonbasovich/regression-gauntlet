@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { useCart } from "@/components/CartProvider";
+import { Field } from "./Field";
 import { deliveryEstimate } from "@/lib/dates";
 import { isValidEmail } from "@/lib/validation";
 import { computeTotals, findCoupon, formatMoney, SHIPPING_RATES, type Coupon, type ShippingMethod } from "@/lib/pricing";
@@ -245,18 +246,6 @@ export function CheckoutForm({ defaults }: { defaults: Defaults }) {
         <h2 id="summary-heading" className="mb-4 text-lg font-semibold text-ink">Order summary</h2>
         {summary}
       </aside>
-    </div>
-  );
-}
-
-function Field({ id, label, error, ...rest }: { id: Fields; label: string; error?: string } & React.InputHTMLAttributes<HTMLInputElement>) {
-  return (
-    <div>
-      <label htmlFor={id} className="label">{label}</label>
-      <input id={id} name={id} className="input" aria-invalid={!!error || undefined} aria-describedby={error ? `${id}-error` : undefined} {...rest} />
-      {error ? (
-        <p id={`${id}-error`} className="field-error">{error}</p>
-      ) : null}
     </div>
   );
 }
