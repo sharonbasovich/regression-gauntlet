@@ -31,18 +31,6 @@ export function Modal({ open, onClose, title, children, side = false }: ModalPro
         onClose();
         return;
       }
-      if (e.key !== "Tab" || !panel) return;
-      const nodes = Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE));
-      if (nodes.length === 0) return;
-      const firstNode = nodes[0];
-      const lastNode = nodes[nodes.length - 1];
-      if (e.shiftKey && document.activeElement === firstNode) {
-        e.preventDefault();
-        lastNode.focus();
-      } else if (!e.shiftKey && document.activeElement === lastNode) {
-        e.preventDefault();
-        firstNode.focus();
-      }
     }
     document.addEventListener("keydown", onKey);
     return () => {
