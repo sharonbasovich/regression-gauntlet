@@ -241,15 +241,9 @@ export function CheckoutForm({ defaults }: { defaults: Defaults }) {
         </button>
       </form>
 
-      <aside className="h-fit lg:sticky lg:top-24" data-testid="order-summary">
-        <details className="card p-5 lg:hidden" data-testid="order-summary-mobile">
-          <summary className="cursor-pointer text-lg font-semibold text-ink">Order summary · {formatMoney(totals.total)}</summary>
-          <div className="mt-4">{summary}</div>
-        </details>
-        <div className="card hidden p-5 lg:block">
-          <h2 id="summary-heading" className="mb-4 text-lg font-semibold text-ink">Order summary</h2>
-          {summary}
-        </div>
+      <aside className="card hidden h-fit p-5 lg:sticky lg:top-24 lg:block" aria-labelledby="summary-heading" data-testid="order-summary">
+        <h2 id="summary-heading" className="mb-4 text-lg font-semibold text-ink">Order summary</h2>
+        {summary}
       </aside>
     </div>
   );
