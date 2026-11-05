@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { decode, encode } from "./auth";
+import { decode } from "./auth";
 import type { LineItem, Totals } from "./pricing";
 
 export const ORDERS_COOKIE = "gs_orders";
@@ -31,6 +31,7 @@ export async function readOrders(): Promise<Order[]> {
 }
 
 export function serializeOrders(orders: Order[]): string {
-  // Cookies are capped at ~4 KB; keep the two most recent orders.
-  return encode(orders.slice(0, 2));
+  // Cookies are capped at ~4 KB; keep the two most recent orders and skip the
+  // base64 layer, which inflated the payload by a third.
+  return JSON.stringify(orders.slice(0, 2));
 }
