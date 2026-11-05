@@ -46,3 +46,7 @@ next-env.d.ts
 /blob-report/
 /playwright/.cache/
 /gauntlet/results/
+
+# gauntlet
+/gauntlet/proofs/.proof-results/
+/gauntlet/.verify-logs/

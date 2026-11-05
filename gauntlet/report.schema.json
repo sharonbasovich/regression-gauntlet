@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/sharonbasovich/regression-gauntlet/gauntlet/report.schema.json",
+  "title": "Regression Gauntlet tester report",
+  "description": "What an AI/E2E tester reports after checking every seeded PR. One entry per PR; each entry lists the (flow, device) observations the tester made. A PR counts as FLAGGED when at least one observation has verdict 'broken'.",
+  "type": "object",
+  "required": ["tester", "prs"],
+  "properties": {
+    "tester": { "type": "string", "description": "Name/version of the tool or person that produced the report." },
+    "run_at": { "type": "string", "format": "date-time" },
+    "base_commit": { "type": "string", "description": "Commit of main the PRs were compared against (manifest.base_commit)." },
+    "notes": { "type": "string" },
+    "prs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["branch", "observations"],
+        "properties": {
+          "branch": { "type": "string", "pattern": "^(bug|control)/\\d{2}-[a-z0-9-]+$", "description": "Branch name of the PR, e.g. bug/03-cart-badge-stale." },
+          "pr": { "type": ["string", "integer"], "description": "Optional PR URL or number." },
+          "observations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["flow", "device", "verdict"],
+              "properties": {
+                "flow": { "type": "string", "enum": ["browse", "product", "cart", "checkout", "auth", "search-filter", "settings", "newsletter", "mobile-nav", "other"] },
+                "device": { "type": "string", "enum": ["desktop", "tablet", "mobile"], "description": "desktop ≈ 1440px, tablet ≈ 834px, mobile ≈ 390px (any engine)." },
+                "browser": { "type": "string", "description": "Optional engine/browser, e.g. chromium, firefox, webkit, ios-safari." },
+                "network": { "type": "string", "description": "Optional network condition, e.g. fast, slow-3g." },
+                "verdict": { "type": "string", "enum": ["broken", "ok", "inconclusive"] },
+                "note": { "type": "string", "description": "What the tester saw. Free text; used only for the per-PR table." }
+              },
+              "additionalProperties": true
+            }
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

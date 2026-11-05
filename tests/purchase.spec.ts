@@ -47,6 +47,7 @@ test.describe("Purchase flow", () => {
   test("coupon GAUNTLET10 takes 10% off the subtotal and the charged total", async ({ page }) => {
     await addToCart(page, "courier-18-rolltop-backpack");
     await page.goto("/checkout");
+    await expect(page.getByTestId("sum-subtotal").first()).not.toHaveText("$0.00");
     const subtotal = money(await page.getByTestId("sum-subtotal").first().textContent());
     const before = money(await page.getByTestId("sum-total").first().textContent());
 

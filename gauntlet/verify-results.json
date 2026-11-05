@@ -1,0 +1,280 @@
+{
+  "generated_at": "2026-11-05T09:14:09Z",
+  "results": [
+    {
+      "id": "BUG-01",
+      "branch": "bug/01-checkout-second-click-noop",
+      "class": "functional",
+      "project": "desktop-1440",
+      "proof_on_main": "pass",
+      "branch_build": "ok",
+      "proof_on_branch": "fails",
+      "verified": true,
+      "baseline_failures": 6
+    },
+    {
+      "id": "BUG-02",
+      "branch": "bug/02-coupon-ignored-in-total",
+      "class": "functional",
+      "project": "desktop-1440",
+      "proof_on_main": "pass",
+      "branch_build": "ok",
+      "proof_on_branch": "fails",
+      "verified": true,
+      "baseline_failures": 5
+    },
+    {
+      "id": "BUG-03",
+      "branch": "bug/03-cart-badge-stale",
+      "class": "functional",
+      "project": "desktop-1440",
+      "proof_on_main": "pass",
+      "branch_build": "ok",
+      "proof_on_branch": "fails",
+      "verified": true,
+      "baseline_failures": 13
+    },
+    {
+      "id": "BUG-04",
+      "branch": "bug/04-price-sort-reversed",
+      "class": "functional",
+      "project": "desktop-1440",
+      "proof_on_main": "pass",
+      "branch_build": "ok",
+      "proof_on_branch": "fails",
+      "verified": true,
+      "baseline_failures": 5
+    },
+    {
+      "id": "BUG-05",
+      "branch": "bug/05-cart-lost-after-login",
+      "class": "state-persistence",
+      "project": "desktop-1440",
+      "proof_on_main": "pass",
+      "branch_build": "ok",
+      "proof_on_branch": "fails",
+      "verified": true,
+      "baseline_failures": 6
+    },
+    {
+      "id": "BUG-06",
+      "branch": "bug/06-mobile-menu-blocks-taps",
+      "class": "mobile-only",
+      "project": "mobile-390",
+      "proof_on_main": "pass",
+      "branch_build": "ok",
+      "proof_on_branch": "fails",
+      "verified": true,
+      "baseline_failures": 17
+    },
+    {
+      "id": "BUG-07",
+      "branch": "bug/07-mobile-sticky-cta-submits-nothing",
+      "class": "mobile-only",
+      "project": "mobile-390",
+      "proof_on_main": "pass",
+      "branch_build": "ok",
+      "proof_on_branch": "fails",
+      "verified": true,
+      "baseline_failures": 5
+    },
+    {
+      "id": "BUG-08",
+      "branch": "bug/08-ios-input-zoom",
+      "class": "mobile-only",
+      "project": "mobile-390",
+      "proof_on_main": "pass",
+      "branch_build": "ok",
+      "proof_on_branch": "fails",
+      "verified": true,
+      "baseline_failures": 0
+    },
+    {
+      "id": "BUG-09",
+      "branch": "bug/09-header-overflow-small-screens",
+      "class": "visual-layout",
+      "project": "mobile-390",
+      "proof_on_main": "pass",
+      "branch_build": "ok",
+      "proof_on_branch": "fails",
+      "verified": true,
+      "baseline_failures": 6
+    },
+    {
+      "id": "BUG-10",
+      "branch": "bug/10-safari-cart-never-hydrates",
+      "class": "browser-specific",
+      "project": "webkit-1440",
+      "proof_on_main": "pass",
+      "branch_build": "ok",
+      "proof_on_branch": "fails",
+      "verified": true,
+      "baseline_failures": 8
+    },
+    {
+      "id": "BUG-11",
+      "branch": "bug/11-firefox-coupon-does-nothing",
+      "class": "browser-specific",
+      "project": "firefox-1440",
+      "proof_on_main": "pass",
+      "branch_build": "ok",
+      "proof_on_branch": "fails",
+      "verified": true,
+      "baseline_failures": 2
+    },
+    {
+      "id": "BUG-13",
+      "branch": "bug/13-remove-drops-all-colours",
+      "class": "functional",
+      "project": "desktop-1440",
+      "proof_on_main": "pass",
+      "branch_build": "ok",
+      "proof_on_branch": "fails",
+      "verified": true,
+      "baseline_failures": 1
+    },
+    {
+      "id": "BUG-14",
+      "branch": "bug/14-checkout-fails-on-slow-api",
+      "class": "network-perf",
+      "project": "desktop-1440",
+      "proof_on_main": "pass",
+      "branch_build": "ok",
+      "proof_on_branch": "fails",
+      "verified": true,
+      "baseline_failures": 1
+    },
+    {
+      "id": "BUG-15",
+      "branch": "bug/15-hero-image-blocks-lcp",
+      "class": "network-perf",
+      "project": "desktop-1440",
+      "proof_on_main": "pass",
+      "branch_build": "ok",
+      "proof_on_branch": "fails",
+      "verified": true,
+      "baseline_failures": 1
+    },
+    {
+      "id": "BUG-16",
+      "branch": "bug/16-search-suggestions-race",
+      "class": "network-perf",
+      "project": "desktop-1440",
+      "proof_on_main": "pass",
+      "branch_build": "ok",
+      "proof_on_branch": "fails",
+      "verified": true,
+      "baseline_failures": 0
+    },
+    {
+      "id": "BUG-18",
+      "branch": "bug/18-settings-lost-on-reload",
+      "class": "state-persistence",
+      "project": "desktop-1440",
+      "proof_on_main": "pass",
+      "branch_build": "ok",
+      "proof_on_branch": "fails",
+      "verified": true,
+      "baseline_failures": 5
+    },
+    {
+      "id": "BUG-19",
+      "branch": "bug/19-cannot-unsubscribe-marketing",
+      "class": "state-persistence",
+      "project": "desktop-1440",
+      "proof_on_main": "pass",
+      "branch_build": "ok",
+      "proof_on_branch": "fails",
+      "verified": true,
+      "baseline_failures": 0
+    },
+    {
+      "id": "BUG-20",
+      "branch": "bug/20-modal-focus-escapes",
+      "class": "a11y-usability",
+      "project": "desktop-1440",
+      "proof_on_main": "pass",
+      "branch_build": "ok",
+      "proof_on_branch": "fails",
+      "verified": true,
+      "baseline_failures": 5
+    },
+    {
+      "id": "BUG-21",
+      "branch": "bug/21-cart-button-no-name",
+      "class": "a11y-usability",
+      "project": "desktop-1440",
+      "proof_on_main": "pass",
+      "branch_build": "ok",
+      "proof_on_branch": "fails",
+      "verified": true,
+      "baseline_failures": 55
+    },
+    {
+      "id": "BUG-22",
+      "branch": "bug/22-muted-text-contrast",
+      "class": "a11y-usability",
+      "project": "desktop-1440",
+      "proof_on_main": "pass",
+      "branch_build": "ok",
+      "proof_on_branch": "fails",
+      "verified": true,
+      "baseline_failures": 56
+    },
+    {
+      "id": "BUG-23",
+      "branch": "bug/23-escape-does-not-close-dialog",
+      "class": "a11y-usability",
+      "project": "desktop-1440",
+      "proof_on_main": "pass",
+      "branch_build": "ok",
+      "proof_on_branch": "fails",
+      "verified": true,
+      "baseline_failures": 10
+    },
+    {
+      "id": "BUG-24",
+      "branch": "bug/24-card-price-clipped",
+      "class": "visual-layout",
+      "project": "desktop-1440",
+      "proof_on_main": "pass",
+      "branch_build": "ok",
+      "proof_on_branch": "fails",
+      "verified": true,
+      "baseline_failures": 0
+    },
+    {
+      "id": "BUG-26",
+      "branch": "bug/26-newsletter-success-not-stored",
+      "class": "silent-failure",
+      "project": "desktop-1440",
+      "proof_on_main": "pass",
+      "branch_build": "ok",
+      "proof_on_branch": "fails",
+      "verified": true,
+      "baseline_failures": 5
+    },
+    {
+      "id": "BUG-27",
+      "branch": "bug/27-search-suggestions-silently-empty",
+      "class": "silent-failure",
+      "project": "desktop-1440",
+      "proof_on_main": "pass",
+      "branch_build": "ok",
+      "proof_on_branch": "fails",
+      "verified": true,
+      "baseline_failures": 8
+    },
+    {
+      "id": "BUG-28",
+      "branch": "bug/28-order-confirmation-not-found",
+      "class": "silent-failure",
+      "project": "desktop-1440",
+      "proof_on_main": "pass",
+      "branch_build": "ok",
+      "proof_on_branch": "fails",
+      "verified": true,
+      "baseline_failures": 10
+    }
+  ]
+}

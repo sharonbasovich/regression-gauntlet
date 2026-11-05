@@ -1,0 +1,830 @@
+{
+  "version": 1,
+  "app": "Gauntlet Shop",
+  "repo": "https://github.com/sharonbasovich/regression-gauntlet",
+  "base_commit": "ef498d09fffa8e75bea4fd17c0871eebc7dae996",
+  "generated_at": "2026-11-05T08:32:08Z",
+  "expected_detection_legend": {
+    "scripted": "A deterministic happy-path spec of the affected flow fails on the branch.",
+    "journey": "Needs a specific multi-step or state-asserting journey (reload, second click, two variants, redirect).",
+    "judgement": "Needs a non-default condition (throttled network, real device, specific engine) or visual/UX/a11y judgement."
+  },
+  "classes": {
+    "functional": "Core behaviour is wrong (totals, counts, ordering, no-op buttons).",
+    "mobile-only": "Only manifests on phone-width viewports / touch devices.",
+    "browser-specific": "Only manifests in one browser engine (WebKit/Safari or Firefox).",
+    "network-perf": "Only manifests under latency, throttling or payload-size pressure.",
+    "state-persistence": "A write appears to succeed but state is lost after a reload or redirect.",
+    "a11y-usability": "Keyboard, screen-reader or contrast regressions; the mouse path still works.",
+    "visual-layout": "Overflow, clipping or overlap that does not break functionality outright.",
+    "silent-failure": "The UI reports success or an empty state while the underlying operation failed."
+  },
+  "flows": [
+    "browse",
+    "product",
+    "cart",
+    "checkout",
+    "auth",
+    "search-filter",
+    "settings",
+    "newsletter",
+    "mobile-nav"
+  ],
+  "devices": [
+    "desktop (1440)",
+    "tablet (834)",
+    "mobile (390)"
+  ],
+  "bugs": [
+    {
+      "id": "BUG-01",
+      "branch": "bug/01-checkout-second-click-noop",
+      "pr": "https://github.com/sharonbasovich/regression-gauntlet/pull/1",
+      "class": "functional",
+      "title": "Guard checkout submit against double-clicks",
+      "severity": "high",
+      "flows": [
+        "checkout"
+      ],
+      "devices": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "browsers": [
+        "all"
+      ],
+      "network": "any",
+      "expected_detection": "journey",
+      "repro": "On checkout, click Place order with an empty form (validation errors), fill the form correctly, click Place order again: nothing happens.",
+      "files": [
+        "app/checkout/CheckoutForm.tsx"
+      ],
+      "proof": {
+        "spec": "gauntlet/proofs/01-checkout-second-click-noop.spec.ts",
+        "project": "desktop-1440"
+      }
+    },
+    {
+      "id": "BUG-02",
+      "branch": "bug/02-coupon-ignored-in-total",
+      "pr": "https://github.com/sharonbasovich/regression-gauntlet/pull/2",
+      "class": "functional",
+      "title": "Compute tax on the pre-discount subtotal; extract percentOff helper",
+      "severity": "high",
+      "flows": [
+        "checkout"
+      ],
+      "devices": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "browsers": [
+        "all"
+      ],
+      "network": "any",
+      "expected_detection": "journey",
+      "repro": "Apply GAUNTLET10 at checkout: the discount line shows -10% but the order total does not go down.",
+      "files": [
+        "lib/pricing.ts"
+      ],
+      "proof": {
+        "spec": "gauntlet/proofs/02-coupon-ignored-in-total.spec.ts",
+        "project": "desktop-1440"
+      }
+    },
+    {
+      "id": "BUG-03",
+      "branch": "bug/03-cart-badge-stale",
+      "pr": "https://github.com/sharonbasovich/regression-gauntlet/pull/3",
+      "class": "functional",
+      "title": "Track cart count in state instead of reducing on every render",
+      "severity": "medium",
+      "flows": [
+        "cart"
+      ],
+      "devices": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "browsers": [
+        "all"
+      ],
+      "network": "any",
+      "expected_detection": "journey",
+      "repro": "Add an item, open /cart, remove it (or change its quantity): the header badge keeps the old number.",
+      "files": [
+        "components/CartProvider.tsx"
+      ],
+      "proof": {
+        "spec": "gauntlet/proofs/03-cart-badge-stale.spec.ts",
+        "project": "desktop-1440"
+      }
+    },
+    {
+      "id": "BUG-04",
+      "branch": "bug/04-price-sort-reversed",
+      "pr": "https://github.com/sharonbasovich/regression-gauntlet/pull/4",
+      "class": "functional",
+      "title": "Share the price comparator between sort modes",
+      "severity": "medium",
+      "flows": [
+        "search-filter"
+      ],
+      "devices": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "browsers": [
+        "all"
+      ],
+      "network": "any",
+      "expected_detection": "scripted",
+      "repro": "Sort the catalog by \"Price: low to high\": the most expensive products are listed first (and vice versa).",
+      "files": [
+        "lib/products.ts"
+      ],
+      "proof": {
+        "spec": "gauntlet/proofs/04-price-sort-reversed.spec.ts",
+        "project": "desktop-1440"
+      }
+    },
+    {
+      "id": "BUG-05",
+      "branch": "bug/05-cart-lost-after-login",
+      "pr": "https://github.com/sharonbasovich/regression-gauntlet/pull/5",
+      "class": "state-persistence",
+      "title": "Login: load the account cart and hard-navigate after sign-in",
+      "severity": "high",
+      "flows": [
+        "auth",
+        "cart",
+        "checkout"
+      ],
+      "devices": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "browsers": [
+        "all"
+      ],
+      "network": "any",
+      "expected_detection": "journey",
+      "repro": "Add an item to the cart, log in (e.g. from checkout): the cart is empty after the redirect.",
+      "files": [
+        "components/AuthForm.tsx"
+      ],
+      "proof": {
+        "spec": "gauntlet/proofs/05-cart-lost-after-login.spec.ts",
+        "project": "desktop-1440"
+      }
+    },
+    {
+      "id": "BUG-06",
+      "branch": "bug/06-mobile-menu-blocks-taps",
+      "pr": "https://github.com/sharonbasovich/regression-gauntlet/pull/6",
+      "class": "mobile-only",
+      "title": "Fade the mobile menu in and out",
+      "severity": "critical",
+      "flows": [
+        "browse",
+        "product",
+        "cart",
+        "checkout",
+        "mobile-nav"
+      ],
+      "devices": [
+        "mobile"
+      ],
+      "browsers": [
+        "all"
+      ],
+      "network": "any",
+      "expected_detection": "scripted",
+      "repro": "On a viewport narrower than 768px nothing below the header can be tapped (e.g. Add to cart) because the invisible menu panel sits on top of the page.",
+      "files": [
+        "components/Header.tsx"
+      ],
+      "proof": {
+        "spec": "gauntlet/proofs/06-mobile-menu-blocks-taps.spec.ts",
+        "project": "mobile-390"
+      }
+    },
+    {
+      "id": "BUG-07",
+      "branch": "bug/07-mobile-sticky-cta-submits-nothing",
+      "pr": "https://github.com/sharonbasovich/regression-gauntlet/pull/7",
+      "class": "mobile-only",
+      "title": "Sticky checkout CTA on mobile",
+      "severity": "critical",
+      "flows": [
+        "checkout"
+      ],
+      "devices": [
+        "mobile"
+      ],
+      "browsers": [
+        "all"
+      ],
+      "network": "any",
+      "expected_detection": "scripted",
+      "repro": "On a phone-width viewport, tap Place order in the sticky bar: the page reloads with the form values in the URL and no order is placed.",
+      "files": [
+        "app/checkout/CheckoutForm.tsx"
+      ],
+      "proof": {
+        "spec": "gauntlet/proofs/07-mobile-sticky-cta-submits-nothing.spec.ts",
+        "project": "mobile-390"
+      }
+    },
+    {
+      "id": "BUG-08",
+      "branch": "bug/08-ios-input-zoom",
+      "pr": "https://github.com/sharonbasovich/regression-gauntlet/pull/8",
+      "class": "mobile-only",
+      "title": "Tighten form control typography",
+      "severity": "low",
+      "flows": [
+        "checkout",
+        "auth",
+        "settings",
+        "newsletter"
+      ],
+      "devices": [
+        "mobile"
+      ],
+      "browsers": [
+        "ios-safari"
+      ],
+      "network": "any",
+      "expected_detection": "judgement",
+      "repro": "On iOS Safari, focusing any text input zooms the page in (font-size below 16px) and leaves it zoomed after blur.",
+      "files": [
+        "app/globals.css"
+      ],
+      "proof": {
+        "spec": "gauntlet/proofs/08-ios-input-zoom.spec.ts",
+        "project": "mobile-390"
+      }
+    },
+    {
+      "id": "BUG-09",
+      "branch": "bug/09-header-overflow-small-screens",
+      "pr": "https://github.com/sharonbasovich/regression-gauntlet/pull/9",
+      "class": "visual-layout",
+      "title": "Show the header search on every breakpoint",
+      "severity": "medium",
+      "flows": [
+        "browse",
+        "mobile-nav",
+        "search-filter"
+      ],
+      "devices": [
+        "mobile",
+        "tablet"
+      ],
+      "browsers": [
+        "all"
+      ],
+      "network": "any",
+      "expected_detection": "judgement",
+      "repro": "At 390px (and 834px) the header is wider than the viewport: the page scrolls horizontally and the cart/account icons are pushed off-screen.",
+      "files": [
+        "components/Header.tsx"
+      ],
+      "proof": {
+        "spec": "gauntlet/proofs/09-header-overflow-small-screens.spec.ts",
+        "project": "mobile-390"
+      }
+    },
+    {
+      "id": "BUG-10",
+      "branch": "bug/10-safari-cart-never-hydrates",
+      "pr": "https://github.com/sharonbasovich/regression-gauntlet/pull/10",
+      "class": "browser-specific",
+      "title": "Defer cart hydration until the browser is idle",
+      "severity": "high",
+      "flows": [
+        "cart",
+        "checkout"
+      ],
+      "devices": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "browsers": [
+        "safari",
+        "webkit"
+      ],
+      "network": "any",
+      "expected_detection": "scripted",
+      "repro": "In Safari/WebKit the cart never hydrates: the header badge never appears, the cart is empty after a reload and the checkout button stays disabled.",
+      "files": [
+        "components/CartProvider.tsx"
+      ],
+      "proof": {
+        "spec": "gauntlet/proofs/10-safari-cart-never-hydrates.spec.ts",
+        "project": "webkit-1440"
+      }
+    },
+    {
+      "id": "BUG-11",
+      "branch": "bug/11-firefox-coupon-does-nothing",
+      "pr": "https://github.com/sharonbasovich/regression-gauntlet/pull/11",
+      "class": "browser-specific",
+      "title": "Scroll the order summary into view after applying a promo code",
+      "severity": "medium",
+      "flows": [
+        "checkout"
+      ],
+      "devices": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "browsers": [
+        "firefox"
+      ],
+      "network": "any",
+      "expected_detection": "scripted",
+      "repro": "In Firefox, clicking Apply with a valid promo code does nothing (no message, no discount) because `scrollIntoViewIfNeeded` is not implemented there.",
+      "files": [
+        "app/checkout/CheckoutForm.tsx"
+      ],
+      "proof": {
+        "spec": "gauntlet/proofs/11-firefox-coupon-does-nothing.spec.ts",
+        "project": "firefox-1440"
+      }
+    },
+    {
+      "id": "BUG-13",
+      "branch": "bug/13-remove-drops-all-colours",
+      "pr": "https://github.com/sharonbasovich/regression-gauntlet/pull/12",
+      "class": "functional",
+      "title": "Simplify the cart remove API",
+      "severity": "medium",
+      "flows": [
+        "cart"
+      ],
+      "devices": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "browsers": [
+        "all"
+      ],
+      "network": "any",
+      "expected_detection": "journey",
+      "repro": "Add the same product in two colours, open /cart and remove one of them: both lines disappear.",
+      "files": [
+        "components/CartProvider.tsx",
+        "app/cart/CartView.tsx"
+      ],
+      "proof": {
+        "spec": "gauntlet/proofs/13-remove-drops-all-colours.spec.ts",
+        "project": "desktop-1440"
+      }
+    },
+    {
+      "id": "BUG-14",
+      "branch": "bug/14-checkout-fails-on-slow-api",
+      "pr": "https://github.com/sharonbasovich/regression-gauntlet/pull/13",
+      "class": "network-perf",
+      "title": "Fail fast when the payment request hangs",
+      "severity": "high",
+      "flows": [
+        "checkout"
+      ],
+      "devices": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "browsers": [
+        "all"
+      ],
+      "network": "slow (checkout API round-trip > 3 s, e.g. throttled 3G)",
+      "expected_detection": "judgement",
+      "repro": "With the checkout API taking more than ~2.5 s (slow network or busy processor), Place order always ends in \"Network error — your card was not charged\" although the order would have gone through.",
+      "files": [
+        "app/checkout/CheckoutForm.tsx"
+      ],
+      "proof": {
+        "spec": "gauntlet/proofs/14-checkout-fails-on-slow-api.spec.ts",
+        "project": "desktop-1440"
+      }
+    },
+    {
+      "id": "BUG-15",
+      "branch": "bug/15-hero-image-blocks-lcp",
+      "pr": "https://github.com/sharonbasovich/regression-gauntlet/pull/14",
+      "class": "network-perf",
+      "title": "Replace the illustrated hero with photographic artwork",
+      "severity": "medium",
+      "flows": [
+        "browse"
+      ],
+      "devices": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "browsers": [
+        "all"
+      ],
+      "network": "slow (3G / 1.5 Mbps); also visible on fast networks via Lighthouse",
+      "expected_detection": "judgement",
+      "repro": "The home page now downloads a ~3.9 MB uncompressed PNG above the fold; on a throttled connection LCP goes from < 1 s to > 10 s.",
+      "files": [
+        "app/page.tsx",
+        "public/hero.png"
+      ],
+      "proof": {
+        "spec": "gauntlet/proofs/15-hero-image-blocks-lcp.spec.ts",
+        "project": "desktop-1440"
+      }
+    },
+    {
+      "id": "BUG-16",
+      "branch": "bug/16-search-suggestions-race",
+      "pr": "https://github.com/sharonbasovich/regression-gauntlet/pull/15",
+      "class": "network-perf",
+      "title": "Simplify the search suggestion fetch",
+      "severity": "medium",
+      "flows": [
+        "search-filter"
+      ],
+      "devices": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "browsers": [
+        "all"
+      ],
+      "network": "slow / variable latency (responses arrive out of order)",
+      "expected_detection": "judgement",
+      "repro": "Type quickly in the header search on a slow connection: suggestions for an earlier, shorter query replace the ones for what you actually typed.",
+      "files": [
+        "components/SearchBox.tsx"
+      ],
+      "proof": {
+        "spec": "gauntlet/proofs/16-search-suggestions-race.spec.ts",
+        "project": "desktop-1440"
+      }
+    },
+    {
+      "id": "BUG-18",
+      "branch": "bug/18-settings-lost-on-reload",
+      "pr": "https://github.com/sharonbasovich/regression-gauntlet/pull/16",
+      "class": "state-persistence",
+      "title": "Narrow the profile cookie path",
+      "severity": "high",
+      "flows": [
+        "settings"
+      ],
+      "devices": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "browsers": [
+        "all"
+      ],
+      "network": "any",
+      "expected_detection": "journey",
+      "repro": "Change a setting and save (toast says saved, API returns 200), reload /account: the old value is back.",
+      "files": [
+        "app/api/account/settings/route.ts"
+      ],
+      "proof": {
+        "spec": "gauntlet/proofs/18-settings-lost-on-reload.spec.ts",
+        "project": "desktop-1440"
+      }
+    },
+    {
+      "id": "BUG-19",
+      "branch": "bug/19-cannot-unsubscribe-marketing",
+      "pr": "https://github.com/sharonbasovich/regression-gauntlet/pull/17",
+      "class": "state-persistence",
+      "title": "Settings API: treat unset fields as unchanged",
+      "severity": "medium",
+      "flows": [
+        "settings"
+      ],
+      "devices": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "browsers": [
+        "all"
+      ],
+      "network": "any",
+      "expected_detection": "journey",
+      "repro": "Turn marketing emails on and save, then turn them off and save (success toast): after a reload the box is checked again. Opting out silently never persists.",
+      "files": [
+        "app/api/account/settings/route.ts"
+      ],
+      "proof": {
+        "spec": "gauntlet/proofs/19-cannot-unsubscribe-marketing.spec.ts",
+        "project": "desktop-1440"
+      }
+    },
+    {
+      "id": "BUG-20",
+      "branch": "bug/20-modal-focus-escapes",
+      "pr": "https://github.com/sharonbasovich/regression-gauntlet/pull/18",
+      "class": "a11y-usability",
+      "title": "Modal: drop the manual Tab loop",
+      "severity": "medium",
+      "flows": [
+        "cart"
+      ],
+      "devices": [
+        "desktop",
+        "tablet"
+      ],
+      "browsers": [
+        "all"
+      ],
+      "network": "any",
+      "expected_detection": "judgement",
+      "repro": "Open the cart drawer and press Tab repeatedly: focus leaves the dialog and lands on the page behind it.",
+      "files": [
+        "components/Modal.tsx"
+      ],
+      "proof": {
+        "spec": "gauntlet/proofs/20-modal-focus-escapes.spec.ts",
+        "project": "desktop-1440"
+      }
+    },
+    {
+      "id": "BUG-21",
+      "branch": "bug/21-cart-button-no-name",
+      "pr": "https://github.com/sharonbasovich/regression-gauntlet/pull/19",
+      "class": "a11y-usability",
+      "title": "Header: remove the hand-maintained aria-label on the cart button",
+      "severity": "medium",
+      "flows": [
+        "cart",
+        "browse"
+      ],
+      "devices": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "browsers": [
+        "all"
+      ],
+      "network": "any",
+      "expected_detection": "scripted",
+      "repro": "The header cart button has no accessible name (axe: button-name, serious); screen readers announce \"button\".",
+      "files": [
+        "components/Header.tsx"
+      ],
+      "proof": {
+        "spec": "gauntlet/proofs/21-cart-button-no-name.spec.ts",
+        "project": "desktop-1440"
+      }
+    },
+    {
+      "id": "BUG-22",
+      "branch": "bug/22-muted-text-contrast",
+      "pr": "https://github.com/sharonbasovich/regression-gauntlet/pull/20",
+      "class": "a11y-usability",
+      "title": "Lighten secondary text per the brand refresh",
+      "severity": "medium",
+      "flows": [
+        "browse",
+        "product",
+        "cart",
+        "checkout"
+      ],
+      "devices": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "browsers": [
+        "all"
+      ],
+      "network": "any",
+      "expected_detection": "scripted",
+      "repro": "Secondary text (category labels, descriptions, hints) drops to ~2.5:1 contrast on white (axe: color-contrast, serious).",
+      "files": [
+        "app/globals.css"
+      ],
+      "proof": {
+        "spec": "gauntlet/proofs/22-muted-text-contrast.spec.ts",
+        "project": "desktop-1440"
+      }
+    },
+    {
+      "id": "BUG-23",
+      "branch": "bug/23-escape-does-not-close-dialog",
+      "pr": "https://github.com/sharonbasovich/regression-gauntlet/pull/21",
+      "class": "a11y-usability",
+      "title": "Modal: scope keyboard handling to the dialog and stop stealing focus on open",
+      "severity": "medium",
+      "flows": [
+        "cart"
+      ],
+      "devices": [
+        "desktop",
+        "tablet"
+      ],
+      "browsers": [
+        "all"
+      ],
+      "network": "any",
+      "expected_detection": "scripted",
+      "repro": "Open the cart drawer with the keyboard and press Escape: it stays open (focus is still on the header button, outside the dialog).",
+      "files": [
+        "components/Modal.tsx"
+      ],
+      "proof": {
+        "spec": "gauntlet/proofs/23-escape-does-not-close-dialog.spec.ts",
+        "project": "desktop-1440"
+      }
+    },
+    {
+      "id": "BUG-24",
+      "branch": "bug/24-card-price-clipped",
+      "pr": "https://github.com/sharonbasovich/regression-gauntlet/pull/22",
+      "class": "visual-layout",
+      "title": "Fixed-width price column on product cards",
+      "severity": "low",
+      "flows": [
+        "browse",
+        "search-filter"
+      ],
+      "devices": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "browsers": [
+        "all"
+      ],
+      "network": "any",
+      "expected_detection": "judgement",
+      "repro": "On product cards with a compare-at price the struck-through price is clipped mid-digit (e.g. \"$68.00 $8\").",
+      "files": [
+        "components/ProductCard.tsx"
+      ],
+      "proof": {
+        "spec": "gauntlet/proofs/24-card-price-clipped.spec.ts",
+        "project": "desktop-1440"
+      }
+    },
+    {
+      "id": "BUG-26",
+      "branch": "bug/26-newsletter-success-not-stored",
+      "pr": "https://github.com/sharonbasovich/regression-gauntlet/pull/23",
+      "class": "silent-failure",
+      "title": "Newsletter: tie the stored preference to the account session",
+      "severity": "medium",
+      "flows": [
+        "newsletter"
+      ],
+      "devices": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "browsers": [
+        "all"
+      ],
+      "network": "any",
+      "expected_detection": "journey",
+      "repro": "Subscribe as a guest: \"Thanks!\" is shown, but after a reload the form is back and nothing was stored.",
+      "files": [
+        "app/api/newsletter/route.ts"
+      ],
+      "proof": {
+        "spec": "gauntlet/proofs/26-newsletter-success-not-stored.spec.ts",
+        "project": "desktop-1440"
+      }
+    },
+    {
+      "id": "BUG-27",
+      "branch": "bug/27-search-suggestions-silently-empty",
+      "pr": "https://github.com/sharonbasovich/regression-gauntlet/pull/24",
+      "class": "silent-failure",
+      "title": "Products API: case-insensitive sort param and defensive error handling",
+      "severity": "medium",
+      "flows": [
+        "search-filter"
+      ],
+      "devices": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "browsers": [
+        "all"
+      ],
+      "network": "any",
+      "expected_detection": "scripted",
+      "repro": "Header search never shows suggestions: every request without a `sort` param throws inside the handler and is swallowed into `{ products: [] }` with HTTP 200.",
+      "files": [
+        "app/api/products/route.ts"
+      ],
+      "proof": {
+        "spec": "gauntlet/proofs/27-search-suggestions-silently-empty.spec.ts",
+        "project": "desktop-1440"
+      }
+    },
+    {
+      "id": "BUG-28",
+      "branch": "bug/28-order-confirmation-not-found",
+      "pr": "https://github.com/sharonbasovich/regression-gauntlet/pull/25",
+      "class": "silent-failure",
+      "title": "Trim the orders cookie",
+      "severity": "critical",
+      "flows": [
+        "checkout"
+      ],
+      "devices": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ],
+      "browsers": [
+        "all"
+      ],
+      "network": "any",
+      "expected_detection": "scripted",
+      "repro": "Payment succeeds (API 200, cart cleared) but the confirmation page says \"We couldn't find that order\" and the order history on /account is empty.",
+      "files": [
+        "lib/orders.ts"
+      ],
+      "proof": {
+        "spec": "gauntlet/proofs/28-order-confirmation-not-found.spec.ts",
+        "project": "desktop-1440"
+      }
+    }
+  ],
+  "controls": [
+    {
+      "id": "CTL-01",
+      "branch": "control/01-pricing-sum-helper",
+      "pr": "https://github.com/sharonbasovich/regression-gauntlet/pull/26",
+      "kind": "refactor",
+      "title": "Refactor cart totals helper",
+      "files": [
+        "lib/pricing.ts"
+      ]
+    },
+    {
+      "id": "CTL-02",
+      "branch": "control/02-about-copy",
+      "pr": "https://github.com/sharonbasovich/regression-gauntlet/pull/27",
+      "kind": "copy",
+      "title": "About page: mention where we ship from",
+      "files": [
+        "app/about/page.tsx"
+      ]
+    },
+    {
+      "id": "CTL-03",
+      "branch": "control/03-extract-nav-config",
+      "pr": "https://github.com/sharonbasovich/regression-gauntlet/pull/28",
+      "kind": "refactor",
+      "title": "Move primary navigation config to lib/nav.ts",
+      "files": [
+        "components/Header.tsx",
+        "lib/nav.ts"
+      ]
+    },
+    {
+      "id": "CTL-04",
+      "branch": "control/04-card-radius",
+      "pr": "https://github.com/sharonbasovich/regression-gauntlet/pull/29",
+      "kind": "cosmetic",
+      "title": "Slightly rounder cards",
+      "files": [
+        "app/globals.css"
+      ]
+    },
+    {
+      "id": "CTL-05",
+      "branch": "control/05-extract-checkout-field",
+      "pr": "https://github.com/sharonbasovich/regression-gauntlet/pull/30",
+      "kind": "refactor",
+      "title": "Checkout: extract Field component",
+      "files": [
+        "app/checkout/CheckoutForm.tsx",
+        "app/checkout/Field.tsx"
+      ]
+    }
+  ]
+}
