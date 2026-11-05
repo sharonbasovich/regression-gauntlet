@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import Link from "next/link";
 import { formatMoney } from "@/lib/pricing";
 
@@ -17,7 +17,6 @@ export function SearchBox({ className = "", autoFocus = false, onNavigate }: { c
   const [value, setValue] = useState("");
   const [results, setResults] = useState<Suggestion[]>([]);
   const [open, setOpen] = useState(false);
-  const requestSeq = useRef(0);
   const listId = useId();
 
   useEffect(() => {
@@ -26,25 +25,18 @@ export function SearchBox({ className = "", autoFocus = false, onNavigate }: { c
       setResults([]);
       return;
     }
-    const seq = ++requestSeq.current;
-    const controller = new AbortController();
     const timer = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/products?q=${encodeURIComponent(q)}&limit=5`, { signal: controller.signal });
+        const res = await fetch(`/api/products?q=${encodeURIComponent(q)}&limit=5`);
         if (!res.ok) return;
         const data = (await res.json()) as { products: Suggestion[] };
-        // Ignore responses that arrive out of order.
-        if (seq !== requestSeq.current) return;
         setResults(data.products);
         setOpen(true);
       } catch {
-        /* aborted */
+        /* network error: keep the previous suggestions */
       }
     }, 120);
-    return () => {
-      clearTimeout(timer);
-      controller.abort();
-    };
+    return () => clearTimeout(timer);
   }, [value]);
 
   function submit(e: React.FormEvent) {
