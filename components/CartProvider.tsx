@@ -39,8 +39,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
-    setItems(readStorage());
-    setHydrated(true);
+    // Read storage once the browser is idle so hydration never competes with first paint.
+    const id = window.requestIdleCallback?.(() => {
+      setItems(readStorage());
+      setHydrated(true);
+    });
+    return () => {
+      if (id !== undefined) window.cancelIdleCallback(id);
+    };
   }, []);
 
   useEffect(() => {
