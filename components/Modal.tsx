@@ -21,8 +21,6 @@ export function Modal({ open, onClose, title, children, side = false }: ModalPro
     if (!open) return;
     previouslyFocused.current = document.activeElement;
     const panel = panelRef.current;
-    const first = panel?.querySelector<HTMLElement>(FOCUSABLE);
-    (first ?? panel)?.focus();
     document.body.style.overflow = "hidden";
 
     function onKey(e: KeyboardEvent) {
@@ -44,9 +42,9 @@ export function Modal({ open, onClose, title, children, side = false }: ModalPro
         firstNode.focus();
       }
     }
-    document.addEventListener("keydown", onKey);
+    panel?.addEventListener("keydown", onKey);
     return () => {
-      document.removeEventListener("keydown", onKey);
+      panel?.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
       const prev = previouslyFocused.current as HTMLElement | null;
       prev?.focus?.();
