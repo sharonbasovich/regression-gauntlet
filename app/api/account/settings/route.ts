@@ -21,6 +21,7 @@ export async function PATCH(req: Request) {
   };
 
   const res = NextResponse.json({ ok: true, profile });
-  res.cookies.set(PROFILE_COOKIE, encode(profile), { ...cookieOptions, maxAge: 60 * 60 * 24 * 365 });
+  // The profile is only read back through this endpoint, so scope the cookie to it.
+  res.cookies.set(PROFILE_COOKIE, encode(profile), { ...cookieOptions, path: "/api/account", maxAge: 60 * 60 * 24 * 365 });
   return res;
 }
