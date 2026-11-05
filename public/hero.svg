@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" width="1200" height="900" role="img" aria-label="Rider silhouette at dawn">
+<defs>
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b2a41"/><stop offset=".55" stop-color="#4b6584"/><stop offset="1" stop-color="#f3b562"/></linearGradient>
+<linearGradient id="ground" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2c3e50"/><stop offset="1" stop-color="#111a24"/></linearGradient>
+</defs>
+<rect width="1200" height="900" fill="url(#sky)"/>
+<circle cx="880" cy="560" r="130" fill="#ffd27f" fill-opacity=".9"/>
+<path d="M0 640c160-60 300-140 480-120s300 120 480 90 240-80 240-80v370H0z" fill="#3b4f66"/>
+<path d="M0 700c200-40 360-100 560-80s320 110 640 60v220H0z" fill="url(#ground)"/>
+<g fill="#0e141b">
+<circle cx="520" cy="690" r="62" fill="none" stroke="#0e141b" stroke-width="10"/>
+<circle cx="700" cy="690" r="62" fill="none" stroke="#0e141b" stroke-width="10"/>
+<path d="M520 690l60-110h80l40 110M580 580l100-10M610 690l50-100" fill="none" stroke="#0e141b" stroke-width="10" stroke-linecap="round"/>
+<path d="M640 560c-20-30 10-70 30-80 30-14 40-50 60-50 10 0 40 30 26 50-10 16-26 30-30 44-6 20 0 40 10 50z"/>
+<circle cx="724" cy="420" r="22"/>
+</g>
+<rect width="1200" height="900" fill="#000" fill-opacity=".08"/>
+</svg>

@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 456 456" width="456" height="456" role="img" aria-label="Reflective Ankle Straps">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl(30 45% 94%)"/><stop offset="1" stop-color="hsl(60 50% 86%)"/></linearGradient></defs>
+<rect width="456" height="456" fill="url(#g)"/><circle cx="96" cy="339" r="22" fill="hsl(30 38% 32%)" fill-opacity=".10"/><circle cx="342" cy="132" r="25" fill="hsl(30 38% 32%)" fill-opacity=".10"/><circle cx="42" cy="139" r="7" fill="hsl(30 38% 32%)" fill-opacity=".10"/><circle cx="347" cy="366" r="26" fill="hsl(30 38% 32%)" fill-opacity=".10"/><circle cx="95" cy="214" r="19" fill="hsl(30 38% 32%)" fill-opacity=".10"/><path d="M100 300c0-90 60-170 128-170s128 80 128 170c-40 20-80 30-128 30s-88-10-128-30z" fill="hsl(30 38% 32%)" opacity=".92"/><path d="M100 300c80 0 176 0 256 0" stroke="#fff" stroke-opacity=".5" stroke-width="8"/>
+</svg>
