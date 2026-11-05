@@ -162,7 +162,7 @@ export function CheckoutForm({ defaults }: { defaults: Defaults }) {
         <div className="mt-4">{summary}</div>
       </details>
 
-      <form ref={formRef} onSubmit={submit} noValidate className="space-y-10" data-testid="checkout-form">
+      <form ref={formRef} onSubmit={submit} noValidate className="space-y-10 pb-20 md:pb-0" data-testid="checkout-form">
         <section aria-labelledby="contact-heading" className="space-y-4">
           <h2 id="contact-heading" className="text-xl font-semibold text-ink">Contact</h2>
           <Field id="email" label="Email" type="email" autoComplete="email" value={values.email} onChange={set("email")} error={errors.email} />
@@ -236,10 +236,16 @@ export function CheckoutForm({ defaults }: { defaults: Defaults }) {
           <p role="alert" className="rounded-md border border-danger/30 bg-danger/5 p-3 text-sm text-danger" data-testid="checkout-error">{serverError}</p>
         ) : null}
 
-        <button type="submit" className="btn-primary w-full sm:w-auto sm:min-w-64" disabled={submitting || !hydrated} data-testid="place-order">
+        <button type="submit" className="btn-primary hidden w-full sm:w-auto sm:min-w-64 md:inline-flex" disabled={submitting || !hydrated} data-testid="place-order">
           {submitting ? "Processing payment…" : `Place order · ${formatMoney(totals.total)}`}
         </button>
       </form>
+
+      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-white p-3 md:hidden" data-testid="mobile-cta">
+        <button type="button" className="btn-primary w-full" disabled={submitting || !hydrated} onClick={() => formRef.current?.submit()} data-testid="place-order-mobile">
+          {submitting ? "Processing payment…" : `Place order · ${formatMoney(totals.total)}`}
+        </button>
+      </div>
 
       <aside className="card hidden h-fit p-5 lg:sticky lg:top-24 lg:block" aria-labelledby="summary-heading" data-testid="order-summary">
         <h2 id="summary-heading" className="mb-4 text-lg font-semibold text-ink">Order summary</h2>
