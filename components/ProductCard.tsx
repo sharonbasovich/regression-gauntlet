@@ -34,7 +34,7 @@ export function ProductCard({ product }: { product: Product }) {
         </h3>
         <p className="line-clamp-2 text-sm text-muted">{product.short}</p>
         <div className="mt-auto flex items-center justify-between pt-3">
-          <Price cents={product.price} compareAt={product.compareAt} testId="card-price" />
+          <Price cents={product.price} compareAt={product.compareAt} className="w-16 overflow-hidden whitespace-nowrap" testId="card-price" />
           <span className="flex items-center gap-1 text-xs text-muted" aria-label={`Rated ${product.rating} out of 5`}>
             <svg aria-hidden="true" width="14" height="14" viewBox="0 0 20 20" fill="currentColor" className="text-amber-700">
               <path d="M10 1.5l2.6 5.5 6 .7-4.4 4.1 1.2 5.9L10 14.8 4.6 17.7l1.2-5.9L1.4 7.7l6-.7z" />
