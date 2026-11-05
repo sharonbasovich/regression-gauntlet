@@ -100,6 +100,8 @@ export function CheckoutForm({ defaults }: { defaults: Defaults }) {
     try {
       const res = await fetch("/api/checkout", {
         method: "POST",
+        // Fail fast instead of leaving the customer on a spinner if the processor hangs.
+        signal: AbortSignal.timeout(3000),
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           items: items.map((i) => ({ productId: i.productId, color: i.color, quantity: i.quantity })),
