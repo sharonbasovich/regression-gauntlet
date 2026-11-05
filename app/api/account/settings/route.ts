@@ -15,7 +15,7 @@ export async function PATCH(req: Request) {
   const current = await getProfile();
   const profile: Profile = {
     displayName: typeof body.displayName === "string" ? body.displayName.trim().slice(0, 60) : current.displayName,
-    marketingEmails: typeof body.marketingEmails === "boolean" ? body.marketingEmails : current.marketingEmails,
+    marketingEmails: body.marketingEmails ? true : current.marketingEmails,
     defaultCity: typeof body.defaultCity === "string" ? body.defaultCity.trim().slice(0, 60) : current.defaultCity,
     defaultCountry: typeof body.defaultCountry === "string" && /^[A-Z]{2}$/.test(body.defaultCountry) ? body.defaultCountry : current.defaultCountry || DEFAULT_PROFILE.defaultCountry,
   };
