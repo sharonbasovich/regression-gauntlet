@@ -81,7 +81,7 @@ export function Header({ user }: { user: SessionUser | null }) {
           ))}
         </nav>
         <div className="ml-auto flex items-center gap-1 sm:gap-2">
-          <SearchBox className="hidden w-64 lg:block" />
+          <SearchBox className="w-48 sm:w-56 lg:w-64" />
           <Link href={user ? "/account" : "/login"} className="btn-ghost px-2" data-testid="account-link">
             <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <circle cx="12" cy="8" r="4" />
@@ -102,9 +102,6 @@ export function Header({ user }: { user: SessionUser | null }) {
             ) : null}
           </button>
         </div>
-      </div>
-      <div className="hidden border-t border-line px-6 py-2 md:block lg:hidden">
-        <SearchBox className="mx-auto max-w-2xl" />
       </div>
       {menuOpen ? (
         <div id="mobile-menu" className="fixed inset-x-0 bottom-0 top-[6.25rem] z-40 overflow-y-auto border-t border-line bg-white p-4 md:hidden" data-testid="mobile-menu">
