@@ -48,7 +48,7 @@ export function CartView() {
                   <button type="button" className="px-3 py-1.5 text-ink" aria-label={`Increase quantity of ${i.name}`} onClick={() => setQuantity(i.productId, i.color, i.quantity + 1)}>+</button>
                 </div>
                 <p className="w-20 text-right font-semibold text-ink" data-testid="line-total">{formatMoney(i.unitPrice * i.quantity)}</p>
-                <button type="button" className="text-sm text-muted underline-offset-4 hover:text-danger hover:underline" onClick={() => remove(i.productId, i.color)} aria-label={`Remove ${i.name} from cart`}>
+                <button type="button" className="text-sm text-muted underline-offset-4 hover:text-danger hover:underline" onClick={() => remove(i.productId)} aria-label={`Remove ${i.name} from cart`}>
                   Remove
                 </button>
               </div>
