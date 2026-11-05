@@ -106,8 +106,12 @@ export function Header({ user }: { user: SessionUser | null }) {
       <div className="hidden border-t border-line px-6 py-2 md:block lg:hidden">
         <SearchBox className="mx-auto max-w-2xl" />
       </div>
-      {menuOpen ? (
-        <div id="mobile-menu" className="fixed inset-x-0 bottom-0 top-[6.25rem] z-40 overflow-y-auto border-t border-line bg-white p-4 md:hidden" data-testid="mobile-menu">
+      <div
+        id="mobile-menu"
+        className={`fixed inset-x-0 bottom-0 top-[6.25rem] z-40 overflow-y-auto border-t border-line bg-white p-4 transition-opacity duration-200 md:hidden ${menuOpen ? "opacity-100" : "opacity-0"}`}
+        aria-hidden={!menuOpen}
+        data-testid="mobile-menu"
+      >
           <SearchBox className="mb-4" onNavigate={() => setMenuOpen(false)} />
           <nav aria-label="Mobile">
             <ul className="divide-y divide-line">
@@ -125,8 +129,7 @@ export function Header({ user }: { user: SessionUser | null }) {
               </li>
             </ul>
           </nav>
-        </div>
-      ) : null}
+      </div>
     </header>
   );
 }
