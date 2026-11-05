@@ -1,11 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export function AuthForm({ mode, next }: { mode: "login" | "signup"; next?: string }) {
-  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,13 +24,15 @@ export function AuthForm({ mode, next }: { mode: "login" | "signup"; next?: stri
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
       });
-      const data = (await res.json()) as { ok: boolean; error?: string };
+      const data = (await res.json()) as { ok: boolean; error?: string; cart?: unknown[] };
       if (!res.ok || !data.ok) {
         setError(data.error ?? "Something went wrong.");
         return;
       }
-      router.push(target);
-      router.refresh();
+      // Replace the guest cart with the account's saved cart, then hard-navigate so the
+      // session cookie is picked up by every server component.
+      window.localStorage.setItem("gs_cart_v1", JSON.stringify(data.cart ?? []));
+      window.location.assign(target);
     } catch {
       setError("Network error. Please try again.");
     } finally {
