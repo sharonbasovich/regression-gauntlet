@@ -10,7 +10,7 @@ export default function HomePage() {
   return (
     <div>
       <section className="relative isolate overflow-hidden bg-ink text-white">
-        <Image src="/hero.svg" alt="" fill priority sizes="100vw" className="object-cover opacity-70" />
+        <Image src="/hero.png" alt="" fill priority unoptimized sizes="100vw" className="object-cover opacity-70" />
         <div className="relative mx-auto flex max-w-7xl flex-col gap-6 px-4 py-20 sm:px-6 md:py-28 lg:py-36">
           <p className="text-sm font-semibold uppercase tracking-widest text-amber">Autumn / Winter collection</p>
           <h1 className="max-w-2xl text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
