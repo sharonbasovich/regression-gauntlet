@@ -6,15 +6,7 @@ import { useEffect, useState } from "react";
 import { useCart } from "./CartProvider";
 import { SearchBox } from "./SearchBox";
 import type { SessionUser } from "@/lib/auth";
-
-const NAV = [
-  { href: "/products", label: "Shop all" },
-  { href: "/products?category=gloves", label: "Gloves" },
-  { href: "/products?category=apparel", label: "Apparel" },
-  { href: "/products?category=bags", label: "Bags" },
-  { href: "/products?category=lights", label: "Lights" },
-  { href: "/about", label: "About" },
-];
+import { NAV } from "@/lib/nav";
 
 function Logo() {
   return (
