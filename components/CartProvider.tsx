@@ -13,7 +13,7 @@ interface CartContextValue {
   drawerOpen: boolean;
   add: (item: Omit<LineItem, "quantity">, quantity?: number) => void;
   setQuantity: (productId: string, color: string, quantity: number) => void;
-  remove: (productId: string, color: string) => void;
+  remove: (productId: string) => void;
   clear: () => void;
   openDrawer: () => void;
   closeDrawer: () => void;
@@ -68,8 +68,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     );
   }, []);
 
-  const remove = useCallback((productId: string, color: string) => {
-    setItems((prev) => prev.filter((i) => !(i.productId === productId && i.color === color)));
+  const remove = useCallback((productId: string) => {
+    setItems((prev) => prev.filter((i) => i.productId !== productId));
   }, []);
 
   const clear = useCallback(() => setItems([]), []);
