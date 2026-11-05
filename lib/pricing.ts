@@ -29,6 +29,10 @@ export function findCoupon(code: string | null | undefined): Coupon | undefined 
   return COUPONS.find((c) => c.code === code.trim().toUpperCase());
 }
 
+function sum<T>(list: T[], pick: (item: T) => number): number {
+  return list.reduce((acc, item) => acc + pick(item), 0);
+}
+
 export interface Totals {
   subtotal: number;
   discount: number;
@@ -42,8 +46,8 @@ export function computeTotals(
   items: LineItem[],
   opts: { coupon?: Coupon; shipping?: ShippingMethod } = {},
 ): Totals {
-  const subtotal = items.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0);
-  const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
+  const subtotal = sum(items, (i) => i.unitPrice * i.quantity);
+  const itemCount = sum(items, (i) => i.quantity);
   const method = opts.shipping ?? "standard";
   let shipping: number = SHIPPING_RATES[method];
   if (method === "standard" && subtotal >= FREE_SHIPPING_THRESHOLD) shipping = 0;
