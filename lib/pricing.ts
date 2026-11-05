@@ -29,6 +29,10 @@ export function findCoupon(code: string | null | undefined): Coupon | undefined 
   return COUPONS.find((c) => c.code === code.trim().toUpperCase());
 }
 
+function percentOff(amount: number, percent: number): number {
+  return Math.round((amount * percent) / 100);
+}
+
 export interface Totals {
   subtotal: number;
   discount: number;
@@ -51,11 +55,12 @@ export function computeTotals(
 
   let discount = 0;
   if (opts.coupon?.kind === "percent") {
-    discount = Math.round((subtotal * opts.coupon.value) / 100);
+    discount = percentOff(subtotal, opts.coupon.value);
   } else if (opts.coupon?.kind === "free-shipping" && method === "standard") {
     shipping = 0;
   }
-  const taxable = subtotal - discount;
+  // Tax is assessed on the merchandise subtotal; promotional discounts do not reduce the taxable base.
+  const taxable = subtotal;
   const tax = Math.round(taxable * TAX_RATE);
   const total = taxable + shipping + tax;
   return { subtotal, discount, shipping, tax, total, itemCount };
