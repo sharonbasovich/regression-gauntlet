@@ -2,8 +2,8 @@
   "version": 1,
   "app": "Gauntlet Shop",
   "repo": "https://github.com/sharonbasovich/regression-gauntlet",
-  "base_commit": "93d7ab4ddf2e2e971ebbc7cfa27b0e5b67cb807f",
-  "generated_at": "2026-11-05T23:47:36Z",
+  "base_commit": "5cdb2b8773b7dc7520d323dda18b559e61077164",
+  "generated_at": "2026-11-07T20:34:15Z",
   "expected_detection_legend": {
     "scripted": "A deterministic happy-path spec of the affected flow fails on the branch.",
     "journey": "Needs a specific multi-step or state-asserting journey (reload, second click, two variants, redirect).",
