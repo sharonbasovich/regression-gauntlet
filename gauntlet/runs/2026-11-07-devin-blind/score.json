@@ -1,0 +1,657 @@
+{
+  "tester": "Devin (ultra) blind browser QA, 5 sessions x 6 PRs",
+  "overall": {
+    "tp": 25,
+    "fn": 0,
+    "fp": 0,
+    "tn": 5,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "localised": 25
+  },
+  "per_class": {
+    "functional": {
+      "tp": 5,
+      "fn": 0
+    },
+    "state-persistence": {
+      "tp": 3,
+      "fn": 0
+    },
+    "mobile-only": {
+      "tp": 3,
+      "fn": 0
+    },
+    "visual-layout": {
+      "tp": 2,
+      "fn": 0
+    },
+    "browser-specific": {
+      "tp": 2,
+      "fn": 0
+    },
+    "network-perf": {
+      "tp": 3,
+      "fn": 0
+    },
+    "a11y-usability": {
+      "tp": 4,
+      "fn": 0
+    },
+    "silent-failure": {
+      "tp": 3,
+      "fn": 0
+    }
+  },
+  "per_tier": {
+    "journey": {
+      "tp": 8,
+      "fn": 0
+    },
+    "scripted": {
+      "tp": 10,
+      "fn": 0
+    },
+    "judgement": {
+      "tp": 7,
+      "fn": 0
+    }
+  },
+  "per_device": {
+    "desktop": {
+      "tp": 21,
+      "fn": 0,
+      "fp": 0
+    },
+    "tablet": {
+      "tp": 1,
+      "fn": 21,
+      "fp": 0
+    },
+    "mobile": {
+      "tp": 21,
+      "fn": 2,
+      "fp": 0
+    }
+  },
+  "per_pr": [
+    {
+      "id": "BUG-01",
+      "branch": "bug/01-checkout-second-click-noop",
+      "kind": "bug",
+      "class": "functional",
+      "expected_detection": "journey",
+      "flagged": true,
+      "result": "TP",
+      "flows_flagged": [
+        "checkout"
+      ],
+      "devices_flagged": [
+        "desktop",
+        "mobile"
+      ],
+      "localised": true,
+      "notes": [
+        "Click 'Place order' with the form empty \u2192 validation errors appear (same as main). Fill all fields correctly and click 'Place order' again \u2192 nothing happens: no request, no spinner, no error, button stays 'Place order \u00b7 $53.36', still on /checkout after further clicks. On main the same sequence navigates to /orders/GS-xxxxx. The inFlight guard is set before validate() and only reset in the fetch finally-block, so the early validation return leaves it stuck. Reproduced in chromium, firefox, webkit at 1440/834/390.",
+        "Same stuck-after-validation repro at 390 in Chromium and WebKit; also under slow-3G throttling."
+      ]
+    },
+    {
+      "id": "BUG-02",
+      "branch": "bug/02-coupon-ignored-in-total",
+      "kind": "bug",
+      "class": "functional",
+      "expected_detection": "journey",
+      "flagged": true,
+      "result": "TP",
+      "flows_flagged": [
+        "checkout"
+      ],
+      "devices_flagged": [
+        "desktop",
+        "mobile"
+      ],
+      "localised": true,
+      "notes": [
+        "Apply GAUNTLET10 at checkout with Trailhead Summer Gloves ($34): summary shows Discount \u2212$3.40 but Tax rises from $2.45 to $2.72 and Total is $44.72 (= 34 + 8 shipping + 2.72) \u2014 the discount is no longer subtracted from the total at all; main totals $41.05. The order page 'Total charged' repeats $44.72, so the customer is actually charged the undiscounted amount while being told the code applied.",
+        "Same on mobile WebKit/Chromium, Firefox, tablet and slow-3G: with 2 lines ($204 subtotal, 10% off) total shown $220.32 vs $198.29 on main; express shipping total $239.32 vs $217.29."
+      ]
+    },
+    {
+      "id": "BUG-03",
+      "branch": "bug/03-cart-badge-stale",
+      "kind": "bug",
+      "class": "functional",
+      "expected_detection": "journey",
+      "flagged": true,
+      "result": "TP",
+      "flows_flagged": [
+        "cart",
+        "checkout"
+      ],
+      "devices_flagged": [
+        "desktop",
+        "mobile"
+      ],
+      "localised": true,
+      "notes": [
+        "Header cart badge no longer tracks cart changes other than 'add': with 4 items (badge 4), remove the Moss glove line on /cart \u2192 lines update but the badge still says 4 (main: 2); press + on a line \u2192 badge unchanged; remove every line \u2192 cart shows 'Your cart is empty' but badge still shows 3 and aria-label reads 'Cart, 3 items' (main: badge gone, 'Cart, 0 items'). Reproduced in chromium/firefox/webkit at 1440/834/390.",
+        "After placing an order the cart is cleared but the badge keeps showing the old count (1) on the order confirmation page; on main the badge disappears. Also reproduced on mobile and under slow-3G.",
+        "Same stale-badge behaviour at 390 in Chromium and WebKit; a reload resyncs the badge (count re-derived from storage on hydration), so the bug shows only within a session."
+      ]
+    },
+    {
+      "id": "BUG-04",
+      "branch": "bug/04-price-sort-reversed",
+      "kind": "bug",
+      "class": "functional",
+      "expected_detection": "scripted",
+      "flagged": true,
+      "result": "TP",
+      "flows_flagged": [
+        "search-filter"
+      ],
+      "devices_flagged": [
+        "desktop",
+        "mobile"
+      ],
+      "localised": true,
+      "notes": [
+        "Catalogue sort is inverted: /products?sort=price-asc ('Price: low to high') now lists $159, $145, $125, $119, ... (descending) and sort=price-desc ('Price: high to low') lists $12, $19, $22, $28, ... (ascending). Main shows the correct order for both. Reproduced via the Sort select + Apply filters on chromium desktop/tablet/mobile, firefox, webkit desktop/mobile.",
+        "Same inverted price sort at 390px (Pixel 7 and iPhone 13)."
+      ]
+    },
+    {
+      "id": "BUG-05",
+      "branch": "bug/05-cart-lost-after-login",
+      "kind": "bug",
+      "class": "state-persistence",
+      "expected_detection": "journey",
+      "flagged": true,
+      "result": "TP",
+      "flows_flagged": [
+        "auth",
+        "checkout"
+      ],
+      "devices_flagged": [
+        "desktop",
+        "mobile"
+      ],
+      "localised": true,
+      "notes": [
+        "Logging in wipes the shopping cart. Repro: as a guest add 'Trailhead Summer Gloves' (header badge 1, localStorage gs_cart_v1 has 1 line) -> Log in with demo@gauntlet.shop / password123 -> lands on /account but the header cart badge is gone, /cart shows 'Your cart is empty' and gs_cart_v1 is '[]' (the login API returns no `cart`, so the new code overwrites the guest cart with []). On main the item survives login.",
+        "Same cart loss after login on iPhone emulation, tablet, Firefox and WebKit, and under slow network.",
+        "Signup from /signup?next=/checkout with 1 item in the cart lands on /checkout showing 'There's nothing to check out yet' (checkout-empty) instead of the prefilled form with the item that main shows; same for the account-prefill checkout after login."
+      ]
+    },
+    {
+      "id": "BUG-06",
+      "branch": "bug/06-mobile-menu-blocks-taps",
+      "kind": "bug",
+      "class": "mobile-only",
+      "expected_detection": "scripted",
+      "flagged": true,
+      "result": "TP",
+      "flows_flagged": [
+        "mobile-nav"
+      ],
+      "devices_flagged": [
+        "mobile"
+      ],
+      "localised": true,
+      "notes": [
+        "At 390px with the hamburger menu CLOSED, the mobile-menu panel is still rendered (opacity:0, pointer-events:auto, fixed full-screen below the header, z-40). document.elementFromPoint at the viewport centre returns a link inside the hidden menu, so every tap on page content below the header is swallowed: tapping a featured product card on the home page does not navigate (main navigates), Playwright clicks on product cards/forms/buttons time out because they are covered. 25 of the suite's mobile tests that pass on main (login, signup, add to cart, cart qty, checkout, settings, search apply, newsletter) all fail on pr/20 at 390px in both chromium and webkit. Also reproduces at 767px wide.",
+        "Keyboard/screen-reader: the closed menu is aria-hidden=\"true\" but its 8 links/search input remain focusable; pressing Tab from the header moves focus into the invisible menu (6th Tab lands on a hidden link). On main the closed menu is not in the DOM. Also the toggle-close path: after closing the menu, the product grid is still not tappable."
+      ]
+    },
+    {
+      "id": "BUG-07",
+      "branch": "bug/07-mobile-sticky-cta-submits-nothing",
+      "kind": "bug",
+      "class": "mobile-only",
+      "expected_detection": "scripted",
+      "flagged": true,
+      "result": "TP",
+      "flows_flagged": [
+        "checkout"
+      ],
+      "devices_flagged": [
+        "mobile"
+      ],
+      "localised": true,
+      "notes": [
+        "At 390px the new sticky 'Place order' bar replaces the in-form button and calls form.submit(), bypassing the React handler: tapping it with a complete valid form does a native GET navigation to /checkout?email=...&cardNumber=4242424242424242&expiry=12%2F29&cvc=123 (card number and CVC land in the URL), no POST to /api/checkout is made, no order/confirmation page appears, and the cart badge/localStorage still hold the items. On main the same tap goes to /orders/GS-xxxxx and empties the cart.",
+        "Same on WebKit mobile: tap on the sticky CTA reloads /checkout with the form fields as a query string; empty-form tap also skips client validation (no field errors, focus stays on body) instead of flagging the 8 invalid fields as on main.",
+        "Reproduces under throttled network too; 'Processing payment\u2026' state never appears because the fetch is never issued."
+      ]
+    },
+    {
+      "id": "BUG-08",
+      "branch": "bug/08-ios-input-zoom",
+      "kind": "bug",
+      "class": "mobile-only",
+      "expected_detection": "judgement",
+      "flagged": true,
+      "result": "TP",
+      "flows_flagged": [
+        "checkout"
+      ],
+      "devices_flagged": [
+        "mobile"
+      ],
+      "localised": true,
+      "notes": [
+        "Every text input and select (login, signup, checkout, settings, promo code, header search, newsletter) renders at computed font-size 14px instead of 16px, and control height drops from 46px to 38px. On iOS Safari form controls under 16px trigger automatic page zoom on focus, so tapping any field on a phone zooms the checkout/login page; main kept 16px (the iOS no-zoom threshold). Zoom itself not reproducible in desktop WebKit emulation (see notes)."
+      ]
+    },
+    {
+      "id": "BUG-09",
+      "branch": "bug/09-header-overflow-small-screens",
+      "kind": "bug",
+      "class": "visual-layout",
+      "expected_detection": "judgement",
+      "flagged": true,
+      "result": "TP",
+      "flows_flagged": [
+        "browse",
+        "cart"
+      ],
+      "devices_flagged": [
+        "mobile",
+        "tablet"
+      ],
+      "localised": true,
+      "notes": [
+        "390px (Pixel 7 / iPhone 13 emulation): the header now inlines a 192px search box, so the row overflows \u2014 account link sits at x=442\u2013480 and the cart button at x=484\u2013522, both outside the 390px viewport; document.scrollWidth=522 and the whole page scrolls horizontally. On main both icons are visible at x=294\u2013374 with no overflow.",
+        "834px (and 768px): logo + 6 nav links + search + 'Log in' + cart need 976px; cart button at x=938\u2013976 is clipped off-screen, scrollWidth 976 > 834, page scrolls sideways. Main shows the search in its own row under the nav with everything fitting.",
+        "Because the cart button is off-screen at 390/834, Playwright cannot click it (not stable/in viewport) in the drawer test; a user has to scroll the header sideways to reach the cart. Tablet (isMobile) newsletter Subscribe click also fails due to the overflowed layout viewport."
+      ]
+    },
+    {
+      "id": "BUG-10",
+      "branch": "bug/10-safari-cart-never-hydrates",
+      "kind": "bug",
+      "class": "browser-specific",
+      "expected_detection": "scripted",
+      "flagged": true,
+      "result": "TP",
+      "flows_flagged": [
+        "cart",
+        "checkout",
+        "product"
+      ],
+      "devices_flagged": [
+        "desktop",
+        "mobile"
+      ],
+      "localised": true,
+      "notes": [
+        "In WebKit (Safari engine) add a product to the cart, then open /cart: the page stays on 'Loading your cart\u2026' indefinitely and the header cart badge never appears, so items cannot be viewed or removed; after reload the cart still never renders. main WebKit shows badge=2 and the items, persisted across reload. Cause: window.requestIdleCallback is undefined in WebKit so cart hydration never runs.",
+        "On WebKit mobile emulation, /checkout never enables 'Place order' (the cart never hydrates), so Safari users cannot buy anything; guest and logged-in checkout both time out. Main completes both on WebKit mobile.",
+        "Add to cart on the product page opens the dialog but the dialog/cart badge never reflect the added item in WebKit (desktop and mobile); same steps on main update badge and drawer."
+      ]
+    },
+    {
+      "id": "BUG-11",
+      "branch": "bug/11-firefox-coupon-does-nothing",
+      "kind": "bug",
+      "class": "browser-specific",
+      "expected_detection": "scripted",
+      "flagged": true,
+      "result": "TP",
+      "flows_flagged": [
+        "checkout"
+      ],
+      "devices_flagged": [
+        "desktop"
+      ],
+      "localised": true,
+      "notes": [
+        "Firefox: on /checkout type GAUNTLET10 and click Apply \u2014 nothing happens: no 'applied' message, no discount line, Place order stays $81.44 (main: $74.10, \u2212$6.80 discount shown). Console: TypeError 'a.scrollIntoViewIfNeeded is not a function' (non-standard API, not implemented in Firefox). Same for FREESHIP."
+      ]
+    },
+    {
+      "id": "BUG-13",
+      "branch": "bug/13-remove-drops-all-colours",
+      "kind": "bug",
+      "class": "functional",
+      "expected_detection": "journey",
+      "flagged": true,
+      "result": "TP",
+      "flows_flagged": [
+        "cart"
+      ],
+      "devices_flagged": [
+        "desktop",
+        "mobile"
+      ],
+      "localised": true,
+      "notes": [
+        "Add Ridgeline Insulated Gloves in Charcoal and again in Moss, open /cart (2 lines for the gloves + 1 Transit Musette), click 'Remove' on the Moss line \u2192 BOTH glove lines disappear (3 lines \u2192 1, badge 4 \u2192 1). On main only the Moss line is removed (3 \u2192 2, badge 2). remove() now filters by productId only, ignoring colour. Reproduced in chromium/firefox/webkit at 1440/834/390.",
+        "Same repro at 390 (Pixel 7 and iPhone 13 emulation) and under slow-3G."
+      ]
+    },
+    {
+      "id": "BUG-14",
+      "branch": "bug/14-checkout-fails-on-slow-api",
+      "kind": "bug",
+      "class": "network-perf",
+      "expected_detection": "judgement",
+      "flagged": true,
+      "result": "TP",
+      "flows_flagged": [
+        "checkout"
+      ],
+      "devices_flagged": [
+        "desktop"
+      ],
+      "localised": true,
+      "notes": [
+        "With network RTT at 3000ms (Slow-3G throughput), Place order on pr/14 shows 'Network error \u2014 your card was not charged. Please try again.' after 3.4s, the POST is aborted (net::ERR_ABORTED), no order cookie and no order in history; main under the identical condition completes the order and lands on /orders/<id> after ~9s. Under Chrome's default Slow-3G preset (2000ms) both builds succeed (POST took ~2.1s), so this needs a slow-ish connection or a slow processor.",
+        "Simulating the payment processor responding 2.5s slower (route delay on /api/checkout, total ~3.1s), main places the order in all three engines; pr/14 fails in Chromium, Firefox (NS_BINDING_ABORTED) and WebKit with the same 'Network error' message and no order created. The new AbortSignal.timeout(3000) hard-fails any checkout that takes over 3s."
+      ]
+    },
+    {
+      "id": "BUG-15",
+      "branch": "bug/15-hero-image-blocks-lcp",
+      "kind": "bug",
+      "class": "network-perf",
+      "expected_detection": "judgement",
+      "flagged": true,
+      "result": "TP",
+      "flows_flagged": [
+        "browse"
+      ],
+      "devices_flagged": [
+        "desktop",
+        "mobile"
+      ],
+      "localised": true,
+      "notes": [
+        "Home hero replaced by /hero.png: a 3,889,553-byte 1440x900 PNG served with `unoptimized` (no resizing/srcset, same 3.9 MB on a 390px phone) vs a 1,334-byte SVG on main. On CDP slow-3G (400 kbps, 400 ms RTT) the hero image never finishes loading within 60 s (main: 1.4 s); on fast-3G (1.6 Mbps) it takes ~20 s to appear (main 0.5 s); even at 10 Mbps it is 3.8 s vs 0.2 s. Page weight for the home page goes from ~46 KB to ~3.9 MB. The dark background keeps the hero text readable while the image is missing, so this is a performance/LCP regression rather than a functional one.",
+        "Same at 390px Pixel 7 emulation on fast-3G: hero completes at ~20 s and downloads 3.9 MB; on main 0.5 s / 23 KB."
+      ]
+    },
+    {
+      "id": "BUG-16",
+      "branch": "bug/16-search-suggestions-race",
+      "kind": "bug",
+      "class": "network-perf",
+      "expected_detection": "judgement",
+      "flagged": true,
+      "result": "TP",
+      "flows_flagged": [
+        "search-filter"
+      ],
+      "devices_flagged": [
+        "desktop",
+        "mobile"
+      ],
+      "localised": true,
+      "notes": [
+        "Type 'glo' in the header search, then quickly change it to 'light' while the first request is still in flight (simulated by delaying the ?q=glo response): pr/16 ends up showing the glove suggestions (Ridgeline Insulated Gloves, Trailhead Summer Gloves, Stormline Waterproof Gloves) for the query 'light'; main shows Transit Musette / Beacon 800 Front Light / Ember Rear Light / Commuter Helmet MIPS. Out-of-order responses are no longer discarded.",
+        "Clear the search box while a suggestion request is pending: on pr/16 the stale suggestion popup appears/remains with an empty input (Chromium, Firefox and WebKit, desktop and mobile); on main nothing is shown. Also reproduced under Chromium Slow-3G where the race is easy to hit by typing normally."
+      ]
+    },
+    {
+      "id": "BUG-18",
+      "branch": "bug/18-settings-lost-on-reload",
+      "kind": "bug",
+      "class": "state-persistence",
+      "expected_detection": "journey",
+      "flagged": true,
+      "result": "TP",
+      "flows_flagged": [
+        "checkout",
+        "settings"
+      ],
+      "devices_flagged": [
+        "desktop",
+        "mobile"
+      ],
+      "localised": true,
+      "notes": [
+        "Account settings no longer persist: log in as demo@gauntlet.shop, set display name 'Zed QA', city Ottawa, country CA, tick marketing, Save -> 'Saved.' appears but the greeting stays 'Hi, Demo Rider' and after reload every field is back to defaults (main shows 'Hi, Zed QA' and keeps all values). The gs_profile cookie is now set with Path=/api/account so the /account page (and checkout) never receive it.",
+        "Knock-on: checkout prefill after saving settings gives name 'Demo Rider', empty city, country US on the branch vs 'Zed QA'/Ottawa/CA on main. Reproduced on Chromium desktop/tablet/mobile, Firefox and WebKit, and under slow-3G."
+      ]
+    },
+    {
+      "id": "BUG-19",
+      "branch": "bug/19-cannot-unsubscribe-marketing",
+      "kind": "bug",
+      "class": "state-persistence",
+      "expected_detection": "journey",
+      "flagged": true,
+      "result": "TP",
+      "flows_flagged": [
+        "settings"
+      ],
+      "devices_flagged": [
+        "desktop",
+        "mobile"
+      ],
+      "localised": true,
+      "notes": [
+        "Log in as demo@gauntlet.shop, tick 'Marketing emails', Save, reload: checkbox is checked (ok). Untick it, Save (toast 'Saved'), reload: checkbox is checked again and GET /api/account/settings still returns marketingEmails=true. On main the opt-out persists as false. Users cannot opt out of marketing email once opted in.",
+        "Same repro on Firefox mobile emulation and on WebKit desktop: after saving with the box unticked and reloading, marketing stays true (main: false). Other fields (name, city Ottawa, country) save correctly on the same submit.",
+        "Opt-out still fails to persist under Slow-3G; name/city changes in the same save do persist, so the regression is isolated to the marketing-emails flag."
+      ]
+    },
+    {
+      "id": "BUG-20",
+      "branch": "bug/20-modal-focus-escapes",
+      "kind": "bug",
+      "class": "a11y-usability",
+      "expected_detection": "judgement",
+      "flagged": true,
+      "result": "TP",
+      "flows_flagged": [
+        "cart"
+      ],
+      "devices_flagged": [
+        "desktop",
+        "mobile"
+      ],
+      "localised": true,
+      "notes": [
+        "On a product page click 'Add to cart' to open the cart dialog, then press Tab repeatedly: after 6 Tabs focus leaves the dialog 3 times and lands on page content behind it (e.g. header nav links); Shift+Tab from the Close button moves focus out to the footer 'Careers' link. On main focus loops inside the dialog in both directions. Keyboard/screen-reader users lose the modal focus trap.",
+        "Same repro in WebKit (3 of 6 Tabs land outside the dialog) and Firefox (Shift+Tab from Close exits the dialog). Escape still closes the dialog and restores focus to the add-to-cart button, so only the Tab loop regressed.",
+        "Focus escapes the open cart dialog with a hardware keyboard on mobile emulation too (fails on all 7 engine/device combinations tested; main passes all 7)."
+      ]
+    },
+    {
+      "id": "BUG-21",
+      "branch": "bug/21-cart-button-no-name",
+      "kind": "bug",
+      "class": "a11y-usability",
+      "expected_detection": "scripted",
+      "flagged": true,
+      "result": "TP",
+      "flows_flagged": [
+        "cart",
+        "mobile-nav"
+      ],
+      "devices_flagged": [
+        "desktop",
+        "mobile"
+      ],
+      "localised": true,
+      "notes": [
+        "The header cart button lost its accessible name: with the aria-label removed its only children are an aria-hidden SVG and an aria-hidden count badge, so the accessibility tree exposes just 'button' (main: 'button \"Cart, 1 item\"'). axe-core (wcag2a) reports button-name on every page; getByRole('button', {name: /cart/i}) finds nothing; screen-reader users tabbing the header hear an unnamed button.",
+        "Same at 390px: tab order reaches an unnamed button between 'Log in' and the hero (main announces 'Cart, N items'). Visually the icon/badge still renders and opens the drawer."
+      ]
+    },
+    {
+      "id": "BUG-22",
+      "branch": "bug/22-muted-text-contrast",
+      "kind": "bug",
+      "class": "a11y-usability",
+      "expected_detection": "scripted",
+      "flagged": true,
+      "result": "TP",
+      "flows_flagged": [
+        "browse",
+        "checkout",
+        "product"
+      ],
+      "devices_flagged": [
+        "desktop",
+        "mobile"
+      ],
+      "localised": true,
+      "notes": [
+        "Secondary text token --color-muted changed #5b6472 -> #9aa3ad: product blurbs, category labels, breadcrumbs, ratings, result count now 2.56:1 contrast on white (2.43:1 on the paper background) vs 5.98:1 on main; axe color-contrast (WCAG AA 1.4.3) reports 59 failing nodes on /products and 28 on / where main reports 0. Repro: open /products, inspect any .text-muted element (computed rgb(154,163,173)).",
+        "Same low-contrast grey on the product page (28 axe color-contrast nodes vs 0 on main) \u2014 colour swatch label, description text and spec labels are hard to read on a 390px screen; also reproduced in Firefox and WebKit.",
+        "Checkout helper text ('This is a demo store\u2026', Arrives-by dates, Subtotal/Shipping/Tax labels) and cart line 'Colour: \u2026/$x each' also drop to ~2.5:1 (8 and 9 axe contrast failures vs 0 on main). Functionally the flows still complete."
+      ]
+    },
+    {
+      "id": "BUG-23",
+      "branch": "bug/23-escape-does-not-close-dialog",
+      "kind": "bug",
+      "class": "a11y-usability",
+      "expected_detection": "scripted",
+      "flagged": true,
+      "result": "TP",
+      "flows_flagged": [
+        "cart"
+      ],
+      "devices_flagged": [
+        "desktop"
+      ],
+      "localised": true,
+      "notes": [
+        "Click 'Add to cart' on a product page (mouse): the cart drawer opens but focus is NOT moved into the dialog (document.activeElement stays on the Add to cart button; on main it moves to the drawer's Close button). Pressing Escape then does nothing - the drawer stays open (main closes it). Reproduced on chromium desktop/tablet/mobile, firefox, webkit desktop/mobile; also via the header cart button.",
+        "Keyboard: open the drawer with Enter on 'Add to cart', then press Tab - focus leaves the modal on the very first Tab and walks the page behind the aria-modal dialog (product cards, header). On main Tab/Shift+Tab cycle within the drawer. Focus trap and Escape-to-close are both lost unless the user first clicks inside the panel."
+      ]
+    },
+    {
+      "id": "BUG-24",
+      "branch": "bug/24-card-price-clipped",
+      "kind": "bug",
+      "class": "visual-layout",
+      "expected_detection": "judgement",
+      "flagged": true,
+      "result": "TP",
+      "flows_flagged": [
+        "browse"
+      ],
+      "devices_flagged": [
+        "desktop",
+        "mobile"
+      ],
+      "localised": true,
+      "notes": [
+        "Price element on product cards is now a fixed 64px wide with overflow hidden + nowrap. Any price of $100+ is cut off: 'Ember Thermal Jersey' shows '$125.0(' (last digit clipped), same for $145.00/$119.00/$159.00; and the strike-through compare-at price is completely hidden on discounted cards (Ridgeline Insulated Gloves shows only '$68.00', main shows '$68.00 $85.00'). 5 of 18 cards on /products clipped (scrollWidth 73\u2013139px vs clientWidth 64px); 0 on main.",
+        "Same truncation at 390px (2-column grid) and 834px tablet; reproduced in Firefox and WebKit. Featured cards on the home page use the same component and are affected too."
+      ]
+    },
+    {
+      "id": "BUG-26",
+      "branch": "bug/26-newsletter-success-not-stored",
+      "kind": "bug",
+      "class": "silent-failure",
+      "expected_detection": "journey",
+      "flagged": true,
+      "result": "TP",
+      "flows_flagged": [
+        "newsletter"
+      ],
+      "devices_flagged": [
+        "desktop",
+        "mobile"
+      ],
+      "localised": true,
+      "notes": [
+        "As a guest (not logged in), submit a valid email in the footer newsletter form: the success toast 'Thanks! Check your inbox' appears, but after reload (or navigating to /products) the footer shows the empty form again instead of 'You're subscribed as guest@example.com'. On main the subscribed state persists. POST /api/newsletter no longer returns a Set-Cookie for gs_newsletter unless a session cookie is present. Reproduced on chromium desktop/tablet/mobile, firefox, webkit desktop/mobile.",
+        "Same guest repro at 390px on Pixel 7 emulation and iPhone 13 (webkit): success message shown, preference lost on reload."
+      ]
+    },
+    {
+      "id": "BUG-27",
+      "branch": "bug/27-search-suggestions-silently-empty",
+      "kind": "bug",
+      "class": "silent-failure",
+      "expected_detection": "scripted",
+      "flagged": true,
+      "result": "TP",
+      "flows_flagged": [
+        "search-filter"
+      ],
+      "devices_flagged": [
+        "desktop",
+        "mobile"
+      ],
+      "localised": true,
+      "notes": [
+        "Header search typeahead is dead: typing 'glo' or 'light' shows no suggestions (main shows 3 and 4). The client calls /api/products?q=glo&limit=5 without a sort param; the branch calls .toLowerCase() on the null sort, throws, and the new catch returns {count:0, products:[]} with HTTP 200. curl confirms: /api/products?q=glo&limit=5 -> count 0 on the branch vs 3 on main (adding &sort=rating works).",
+        "Same in the hamburger-menu search on mobile (Chromium, WebKit, slow-3G) and on Firefox desktop: no suggestion list ever appears."
+      ]
+    },
+    {
+      "id": "BUG-28",
+      "branch": "bug/28-order-confirmation-not-found",
+      "kind": "bug",
+      "class": "silent-failure",
+      "expected_detection": "scripted",
+      "flagged": true,
+      "result": "TP",
+      "flows_flagged": [
+        "checkout",
+        "settings"
+      ],
+      "devices_flagged": [
+        "desktop",
+        "mobile"
+      ],
+      "localised": true,
+      "notes": [
+        "Complete checkout with a valid card (4242...): the API returns ok and the app navigates to /orders/GS-XXXXX, but the confirmation page renders 'We couldn't find that order - Order GS-XXXXX isn't in this browser's recent orders' with only a Continue shopping link; the cart has already been emptied so the user has no record of what they bought. On main the page shows 'Thanks, Casey!' with items, totals and ETA. The gs_orders cookie is now written as raw JSON while readOrders still base64-decodes it. Reproduced on chromium desktop/tablet/mobile, firefox, webkit desktop/mobile.",
+        "After placing orders and logging in as demo@gauntlet.shop, the account page's 'Recent orders' shows 'No orders yet in this browser' (main lists each order with a working link).",
+        "Same repro at 390px (Pixel 7 / iPhone 13): order confirmation page shows the not-found state."
+      ]
+    },
+    {
+      "id": "CTL-01",
+      "branch": "control/01-pricing-sum-helper",
+      "kind": "control",
+      "flagged": false,
+      "result": "TN",
+      "notes": []
+    },
+    {
+      "id": "CTL-02",
+      "branch": "control/02-about-copy",
+      "kind": "control",
+      "flagged": false,
+      "result": "TN",
+      "notes": []
+    },
+    {
+      "id": "CTL-03",
+      "branch": "control/03-extract-nav-config",
+      "kind": "control",
+      "flagged": false,
+      "result": "TN",
+      "notes": []
+    },
+    {
+      "id": "CTL-04",
+      "branch": "control/04-card-radius",
+      "kind": "control",
+      "flagged": false,
+      "result": "TN",
+      "notes": []
+    },
+    {
+      "id": "CTL-05",
+      "branch": "control/05-extract-checkout-field",
+      "kind": "control",
+      "flagged": false,
+      "result": "TN",
+      "notes": []
+    }
+  ],
+  "missing": []
+}

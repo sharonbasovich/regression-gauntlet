@@ -88,6 +88,14 @@ Each manifest entry records: `class`, `severity`, affected `flows`, `devices`, `
 - **journey** — needs a specific multi-step or state-asserting journey: reload, second click, two variants, redirect (8 bugs)
 - **judgement** — needs a non-default condition (throttled network, real device, a specific engine) or visual/UX/a11y judgement (7 bugs)
 
+## Real runs
+
+| date | tester | PRs | TP/FN/FP/TN | P / R / F1 | notes |
+|---|---|---|---|---|---|
+| 2026-11-07 | Devin (general coding agent), blind, 5 sessions × 6 PRs | 30 | 25/0/0/5 | 1.00 / 1.00 / 1.00 | [scorecard](gauntlet/runs/2026-11-07-devin-blind/SCORECARD.md) · ran on a stripped/shuffled mirror ([regression-gauntlet-blind](https://github.com/sharonbasovich/regression-gauntlet-blind), mapping now public in that folder) · ~30 min per 6 PRs |
+
+The sample report in `gauntlet/sample-report.json` is illustrative; the table above is the only real data. Simulithic has not been run yet (invite-only).
+
 ## Pointing an AI tester at it
 
 Live production build of `main`: **https://regression-gauntlet.vercel.app** (Vercel, Deployment Protection off). Every PR branch gets a public Vercel preview deployment (URL in the `vercel[bot]` comment on each PR and in the project's Deployments list; e.g. PR #24 → https://regression-gauntlet-git-bug-27-b1d04e-sharon-basovichs-projects.vercel.app), so a PR-vs-production tester can be pointed at this repo as-is.

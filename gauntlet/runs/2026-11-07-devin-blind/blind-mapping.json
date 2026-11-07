@@ -1,0 +1,309 @@
+{
+ "order_seed": 20261105,
+ "prs": [
+  {
+   "blind": "pr/01",
+   "orig_branch": "bug/07-mobile-sticky-cta-submits-nothing",
+   "orig_pr": 7,
+   "title": "Sticky checkout CTA on mobile",
+   "body": "On phones the Place order button was below a long form. Move it into a sticky bottom bar (< md) so the total and CTA are always visible; the inline button stays on larger screens.",
+   "files": [
+    "app/checkout/CheckoutForm.tsx"
+   ]
+  },
+  {
+   "blind": "pr/02",
+   "orig_branch": "bug/08-ios-input-zoom",
+   "orig_pr": 8,
+   "title": "Tighten form control typography",
+   "body": "Inputs looked oversized next to the 14px labels. Drop them to `text-sm` and trim the vertical padding so forms sit tighter.",
+   "files": [
+    "app/globals.css"
+   ]
+  },
+  {
+   "blind": "pr/03",
+   "orig_branch": "bug/02-coupon-ignored-in-total",
+   "orig_pr": 2,
+   "title": "Compute tax on the pre-discount subtotal; extract percentOff helper",
+   "body": "Finance asked that sales tax be assessed on the merchandise subtotal rather than the discounted amount. While in here, pulled the percentage maths into a small `percentOff` helper so the coupon kinds read the same way.",
+   "files": [
+    "lib/pricing.ts"
+   ]
+  },
+  {
+   "blind": "pr/04",
+   "orig_branch": "bug/21-cart-button-no-name",
+   "orig_pr": 19,
+   "title": "Header: remove the hand-maintained aria-label on the cart button",
+   "body": "The `aria-label` on the cart button duplicated the count badge and drifted out of sync with it. Drop it; the badge is the source of truth.",
+   "files": [
+    "components/Header.tsx"
+   ]
+  },
+  {
+   "blind": "pr/05",
+   "orig_branch": "bug/27-search-suggestions-silently-empty",
+   "orig_pr": 24,
+   "title": "Products API: case-insensitive sort param and defensive error handling",
+   "body": "Accept `sort=PRICE-ASC` etc. from older bookmarks, and make sure a malformed query can never 500 the typeahead \u2014 return an empty list instead.",
+   "files": [
+    "app/api/products/route.ts"
+   ]
+  },
+  {
+   "blind": "pr/06",
+   "orig_branch": "bug/18-settings-lost-on-reload",
+   "orig_pr": 16,
+   "title": "Narrow the profile cookie path",
+   "body": "Scope the profile cookie to the account API instead of the whole site so it is not sent with every static asset request.",
+   "files": [
+    "app/api/account/settings/route.ts"
+   ]
+  },
+  {
+   "blind": "pr/07",
+   "orig_branch": "bug/11-firefox-coupon-does-nothing",
+   "orig_pr": 11,
+   "title": "Scroll the order summary into view after applying a promo code",
+   "body": "On small screens the summary is below the fold, so customers could not see the discount after applying a code. Scroll it into view only if it is actually off-screen.",
+   "files": [
+    "app/checkout/CheckoutForm.tsx"
+   ]
+  },
+  {
+   "blind": "pr/08",
+   "orig_branch": "bug/09-header-overflow-small-screens",
+   "orig_pr": 9,
+   "title": "Show the header search on every breakpoint",
+   "body": "Search was hidden below `lg` and only reachable through the menu / the tablet search row. Render the search box in the header bar at every width and drop the extra row.",
+   "files": [
+    "components/Header.tsx"
+   ]
+  },
+  {
+   "blind": "pr/09",
+   "orig_branch": "control/02-about-copy",
+   "orig_pr": 27,
+   "title": "About page: mention where we ship from",
+   "body": "Small copy addition to the About page intro.",
+   "files": [
+    "app/about/page.tsx"
+   ]
+  },
+  {
+   "blind": "pr/10",
+   "orig_branch": "bug/01-checkout-second-click-noop",
+   "orig_pr": 1,
+   "title": "Guard checkout submit against double-clicks",
+   "body": "Customers who double-click \"Place order\" could fire two payment requests. Track in-flight submits with a ref so the second click is ignored while the first request is running.\n\nTested locally: single click still places an order.",
+   "files": [
+    "app/checkout/CheckoutForm.tsx"
+   ]
+  },
+  {
+   "blind": "pr/11",
+   "orig_branch": "bug/13-remove-drops-all-colours",
+   "orig_pr": 12,
+   "title": "Simplify the cart remove API",
+   "body": "`remove` took a (productId, color) pair although the UI only ever removes by product. Drop the second argument.",
+   "files": [
+    "app/cart/CartView.tsx",
+    "components/CartProvider.tsx"
+   ]
+  },
+  {
+   "blind": "pr/12",
+   "orig_branch": "bug/03-cart-badge-stale",
+   "orig_pr": 3,
+   "title": "Track cart count in state instead of reducing on every render",
+   "body": "`count` was recomputed with a reduce on every provider render. Keep it in its own state slot and bump it when items are added.\n\nNo visible changes intended.",
+   "files": [
+    "components/CartProvider.tsx"
+   ]
+  },
+  {
+   "blind": "pr/13",
+   "orig_branch": "bug/19-cannot-unsubscribe-marketing",
+   "orig_pr": 17,
+   "title": "Settings API: treat unset fields as unchanged",
+   "body": "The mobile client sends partial profile updates. Only overwrite `marketingEmails` when it is explicitly provided so a partial PATCH does not reset it.",
+   "files": [
+    "app/api/account/settings/route.ts"
+   ]
+  },
+  {
+   "blind": "pr/14",
+   "orig_branch": "bug/14-checkout-fails-on-slow-api",
+   "orig_pr": 13,
+   "title": "Fail fast when the payment request hangs",
+   "body": "If the processor call stalls, customers were left on \"Processing payment\u2026\" indefinitely. Abort the request after 3s and show the retry message instead.",
+   "files": [
+    "app/checkout/CheckoutForm.tsx"
+   ]
+  },
+  {
+   "blind": "pr/15",
+   "orig_branch": "bug/20-modal-focus-escapes",
+   "orig_pr": 18,
+   "title": "Modal: drop the manual Tab loop",
+   "body": "`aria-modal=\"true\"` already tells assistive tech the rest of the page is inert, so the hand-rolled Tab wrapping is redundant. Remove it to simplify the key handler.",
+   "files": [
+    "components/Modal.tsx"
+   ]
+  },
+  {
+   "blind": "pr/16",
+   "orig_branch": "bug/16-search-suggestions-race",
+   "orig_pr": 15,
+   "title": "Simplify the search suggestion fetch",
+   "body": "Remove the AbortController + sequence-number dance around the typeahead request; it produced a steady stream of `AbortError`s in Sentry and the debounce already limits request volume.",
+   "files": [
+    "components/SearchBox.tsx"
+   ]
+  },
+  {
+   "blind": "pr/17",
+   "orig_branch": "control/03-extract-nav-config",
+   "orig_pr": 28,
+   "title": "Move primary navigation config to lib/nav.ts",
+   "body": "The `NAV` array lived inside the Header component. Move it to `lib/nav.ts` so the footer and sitemap can reuse it later.",
+   "files": [
+    "components/Header.tsx",
+    "lib/nav.ts"
+   ]
+  },
+  {
+   "blind": "pr/18",
+   "orig_branch": "bug/10-safari-cart-never-hydrates",
+   "orig_pr": 10,
+   "title": "Defer cart hydration until the browser is idle",
+   "body": "Reading localStorage and re-rendering the header during the first paint showed up in INP traces. Hydrate the cart from `requestIdleCallback` instead (optional-chained so it is a no-op where unsupported).",
+   "files": [
+    "components/CartProvider.tsx"
+   ]
+  },
+  {
+   "blind": "pr/19",
+   "orig_branch": "bug/26-newsletter-success-not-stored",
+   "orig_pr": 23,
+   "title": "Newsletter: tie the stored preference to the account session",
+   "body": "Guests now go through double opt-in by email, so only remember the subscription in the browser for signed-in customers. The success message is unchanged.",
+   "files": [
+    "app/api/newsletter/route.ts"
+   ]
+  },
+  {
+   "blind": "pr/20",
+   "orig_branch": "bug/06-mobile-menu-blocks-taps",
+   "orig_pr": 6,
+   "title": "Fade the mobile menu in and out",
+   "body": "The mobile menu popped in instantly. Keep it mounted and animate opacity so it fades in/out over 200ms; `aria-hidden` reflects the open state.",
+   "files": [
+    "components/Header.tsx"
+   ]
+  },
+  {
+   "blind": "pr/21",
+   "orig_branch": "bug/23-escape-does-not-close-dialog",
+   "orig_pr": 21,
+   "title": "Modal: scope keyboard handling to the dialog and stop stealing focus on open",
+   "body": "Listen for keys on the dialog element rather than `document`, so modal shortcuts cannot interfere with other components, and leave focus where it was on open (screen readers announce the dialog from `aria-modal`).",
+   "files": [
+    "components/Modal.tsx"
+   ]
+  },
+  {
+   "blind": "pr/22",
+   "orig_branch": "bug/28-order-confirmation-not-found",
+   "orig_pr": 25,
+   "title": "Trim the orders cookie",
+   "body": "The orders cookie was getting close to the 4 KB limit with two orders. Store plain JSON instead of base64 (saves ~33%).",
+   "files": [
+    "lib/orders.ts"
+   ]
+  },
+  {
+   "blind": "pr/23",
+   "orig_branch": "bug/15-hero-image-blocks-lcp",
+   "orig_pr": 14,
+   "title": "Replace the illustrated hero with photographic artwork",
+   "body": "Swap the flat SVG hero for the new photographic key visual from the brand team. Served unoptimised because the image pipeline was blurring the film grain.",
+   "files": [
+    "app/page.tsx",
+    "public/hero.png"
+   ]
+  },
+  {
+   "blind": "pr/24",
+   "orig_branch": "bug/04-price-sort-reversed",
+   "orig_pr": 4,
+   "title": "Share the price comparator between sort modes",
+   "body": "Both price sorts had their own inline comparator. Use one `byPrice` comparator and reverse for the other direction.",
+   "files": [
+    "lib/products.ts"
+   ]
+  },
+  {
+   "blind": "pr/25",
+   "orig_branch": "bug/22-muted-text-contrast",
+   "orig_pr": 20,
+   "title": "Lighten secondary text per the brand refresh",
+   "body": "Update `--color-muted` to the new secondary grey from the refreshed palette.",
+   "files": [
+    "app/globals.css"
+   ]
+  },
+  {
+   "blind": "pr/26",
+   "orig_branch": "control/05-extract-checkout-field",
+   "orig_pr": 30,
+   "title": "Checkout: extract Field component",
+   "body": "Move the `Field` input wrapper out of `CheckoutForm.tsx` into its own file so it can be reused by the settings form.",
+   "files": [
+    "app/checkout/CheckoutForm.tsx",
+    "app/checkout/Field.tsx"
+   ]
+  },
+  {
+   "blind": "pr/27",
+   "orig_branch": "control/04-card-radius",
+   "orig_pr": 29,
+   "title": "Slightly rounder cards",
+   "body": "Design nudge: cards go from `rounded-xl` to `rounded-2xl` to match the new buttons in the design system.",
+   "files": [
+    "app/globals.css"
+   ]
+  },
+  {
+   "blind": "pr/28",
+   "orig_branch": "bug/24-card-price-clipped",
+   "orig_pr": 22,
+   "title": "Fixed-width price column on product cards",
+   "body": "Give the price a fixed width so the star rating lines up across cards in a row.",
+   "files": [
+    "components/ProductCard.tsx"
+   ]
+  },
+  {
+   "blind": "pr/29",
+   "orig_branch": "control/01-pricing-sum-helper",
+   "orig_pr": 26,
+   "title": "Refactor cart totals helper",
+   "body": "Pull the two reduce calls in `computeTotals` into a tiny `sum` helper. Pure refactor, no behaviour change.",
+   "files": [
+    "lib/pricing.ts"
+   ]
+  },
+  {
+   "blind": "pr/30",
+   "orig_branch": "bug/05-cart-lost-after-login",
+   "orig_pr": 5,
+   "title": "Login: load the account cart and hard-navigate after sign-in",
+   "body": "After signing in we now take the cart returned by the auth endpoint (falls back to empty until the account-cart service ships) and do a full navigation so every server component sees the new session cookie, instead of relying on `router.refresh()`.",
+   "files": [
+    "components/AuthForm.tsx"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,1286 @@
+{
+ "tester": "Devin (ultra) blind browser QA, 5 sessions x 6 PRs",
+ "run_at": "2026-11-07T20:52:00Z",
+ "notes": "[A] Method: built main and pr/01-pr/06 from the repo in separate worktrees (npm ci && npm run build && next start on ports 3100-3106) and drove every build with a scripted Playwright end-to-end pass covering browse, catalogue filters/sort, header + mobile-menu search typeahead, product page (colour/qty/add to cart), cart drawer (Escape), cart page (qty/reload persistence), checkout (coupons GAUNTLET10/FREESHIP/invalid, express/standard, validation, place order -> order page, cart cleared), auth (wrong password, demo login, logout, signup), account settings (save, reload, checkout prefill), newsletter (invalid + success + reload), mobile hamburger menu (open, Escape, navigate), plus accessible-name/tab-order checks and axe (wcag2a/aa) on the header. Matrix per build: Chromium desktop 1440, tablet 834, mobile 390 (touch/iPhone UA), Firefox desktop, WebKit mobile, and a Chromium mobile run under emulated slow-3G (400 ms latency / 50 KB/s). Every metric was diffed PR-vs-main; only differences reproduced across engines were treated as regressions. Also confirmed API-level behaviour with curl where relevant. Time spent: ~1.5 h. Harness noise (ignored): WebKit occasionally aborted the signup form fill before hydration, and one WebKit run on pr/04 lost the settings save (a re-run matched main); both happened independent of the PR under test. Inconclusive point: pr/02 drops every input/select from 16px to 14px; iOS Safari auto-zooms the page on focus for form controls under 16px, which is a real-device behaviour I could not reproduce in desktop WebKit emulation (visualViewport.scale stayed 1) - the 'broken' verdict there rests on the measured 14px plus documented iOS behaviour, not on observed zoom. No other assumptions needed; no fixes, pushes or PRs were made.\n[B] Method: built main and each PR branch (git worktrees, shared node_modules, `next build` + `next start` on ports 3100/3107-3112). Wrote a Playwright probe suite (~30 scenarios \u00d7 6 projects: chromium 1440/834(iPad Mini, touch)/390(Pixel 7), firefox 1440, webkit 1440, webkit 390 (iPhone 13); plus axe-core wcag2a/aa on 7 pages and a slow-3G CDP-throttled checkout/search spec) covering browse, product, cart (two colours of one product, remove, qty, reload persistence, empty state, badge + aria-label), checkout (coupons GAUNTLET10/FREESHIP/invalid, validation-then-submit, declined card retry, double-click, resulting /orders page + emptied cart), auth (login/bad login/signup/logout/persistence), settings (save, reload, checkout prefill), search suggestions/filters, newsletter (submit + reload), mobile-nav (open, Escape, aria-expanded, body scroll lock). Ran the identical suite against main first (113/113 pass) and then each PR; every failure was then re-reproduced with a standalone script and/or screenshots before calling it broken. Diffs were read only to scope the flows. Baseline noise ignored: Next.js RSC-prefetch 'Failed to fetch RSC payload' console messages in Firefox/WebKit appear on main too; one WebKit signup timeout on pr/09 was a flake (3/3 pass on rerun). pr/09 is copy-only; the new 'ships from Montr\u00e9al' sentence slightly contradicts the Careers paragraph ('team of eleven in Toronto') but that is content, not a functional regression, so it is recorded as ok. pr/10's intended double-click guard adds nothing observable (the button is already disabled while submitting on main) but breaks resubmission after any validation error. Time spent: ~1h45m wall clock including builds.\n[C] Method: read each PR diff only to scope which flows to target, then judged everything by behaviour. Built main and pr/13-pr/18 from isolated git worktrees (npm ci / next build / next start on ports 3100 + 311N) and drove all seven builds with the same Playwright harness in Chromium, Firefox and WebKit at desktop 1440x900, tablet 834x1194 and iPhone-13 mobile emulation (touch), plus Chromium Slow-3G (CDP 2000ms RTT, 400kbps) for cart/product/checkout/newsletter/search/settings. Harness scenarios: home + catalogue browse (categories, sort, empty search, 404), product add-to-cart with colour/qty merge, cart persistence across reload + drawer contents/subtotal, guest and logged-in checkout verified by landing on the /orders/<id> page and the order appearing in account history (not just a toast), login/signup/logout/bad-credentials/redirects/session persistence, search suggestions incl. an out-of-order-response race, account settings save+reload, newsletter, hamburger mobile-nav, cart modal keyboard behaviour (Tab/Shift+Tab/Escape/focus restore), axe-core scan, console errors. Each PR result was diffed against the main run of the identical configuration; only differences from main are reported as broken. Time spent: ~5h wall clock. Inconclusive/caveats: (1) WebKit login/signup intermittently timed out under parallel load on main as well as on pr/13, pr/15 and pr/16; re-running those scenarios serially passed on every branch, so this is harness/engine flakiness, not a PR regression. (2) pr/14's 3-second checkout abort does NOT trigger under Chrome's standard Slow-3G preset (POST /api/checkout took ~2.1s, order placed); it triggers at ~3s RTT or when the processor responds ~2.5s slower than the mock's fixed 600ms, which I consider a realistic payment-processor condition, hence broken. (3) pr/18's bug is engine-specific: requestIdleCallback is undefined in WebKit (Playwright WebKit 27.2 / Safari), so Safari users get a permanently loading cart; Chromium and Firefox are unaffected. (4) axe reported one heading-order violation on /products?category=gloves identically on every branch including main, so not attributed to any PR. No code was changed, no PRs opened, nothing pushed.\n[D] Method: built main and each PR branch from a scratch clone into separate worktrees (`npm ci && npm run build && next start` on ports 3100/3119-3124). Wrote a 43-test Playwright suite covering every flow (browse, product, cart, checkout incl. coupon/express/declined card/order history, auth login/signup/logout/?next, search-filter incl. all four sorts + max/instock, settings persistence + checkout prefill, newsletter guest/signed-in/invalid, mobile-nav, keyboard/focus/Escape handling of the cart drawer, axe WCAG 2A/2AA scans, skip link) and ran it on 6 projects: chromium desktop 1440x900, chromium tablet 834x1112 (iPad UA), chromium mobile 390x844 (Pixel 7, touch), firefox desktop 1440, webkit desktop 1440, webkit mobile 390 (iPhone 13) = 258 runs per branch, plus a CDP slow-3G (400 kbps/400 ms RTT) and fast-3G (1.6 Mbps) throttle test on chromium and ad-hoc node/Playwright probes (elementFromPoint, touchscreen taps, tab order) to confirm each hypothesis. Baseline: main passed everything except my own mobile-nav tests on the 834px tablet project (the hamburger is hidden at >=768px, so those 2 failures are identical on main and every PR and are ignored), and one flaky settings test (fails ~1/6 on firefox on main too; also seen once on pr/20 firefox and once on pr/21 webkit-mobile - re-ran 3x each, all passed, so not attributed to the PRs). A webkit checkout-coupon flake on pr/19 was a hydration race in my test, fixed and re-verified green on main and pr/19. Firefox SIGSEGV'd once on launch (pr/19 axe test) - environment flake, test is skipped on firefox anyway. Every verdict below is based on observed behaviour on the PR build vs the main build; diffs were only used to scope which flows to test. Nothing was modified in the repository. Inconclusive/judgement: pr/23 is flagged purely as a performance regression under throttled networks (3.9 MB unoptimized PNG hero vs 1.3 KB SVG on main); on a fast connection the page is visually fine. If the answer key treats slow-network LCP regressions as harmless, this is the one PR most likely to be a false positive. Time spent: ~2.5 h wall clock.\n[E] Method: built main and each of pr/25\u2013pr/30 from the repo in separate git worktrees (shared node_modules), served each with `next start` on its own port (main 3100, prNN 31NN). Wrote one Playwright script that drives every flow end-to-end (home/catalogue incl. filter+sort+max+instock, search suggestions + submit, product page add-to-cart with colour/qty, drawer focus/Escape, cart qty/remove/reload, guest checkout with empty-submit validation, aria-describedby/labels, coupon valid+invalid, express, declined card, successful order + order page + cart cleared, newsletter invalid/valid/persist, guest cart -> login (bad+good) -> account/cart, settings save + reload + checkout prefill, logout, signup with ?next=/checkout, 404/about/help) and records ~90 observable values plus axe-core WCAG 2A/AA scans on 6 pages and computed styles. Ran it against all 7 builds in 5 projects: Chromium desktop 1440px, Chromium tablet 834px (touch), Chromium iPhone 13 390px (mobile UA/touch, with hamburger-menu checks), Firefox 1440px, WebKit 1440px; plus a throttled run (400ms RTT, 50KB/s down) for main/pr26/pr29/pr30. Compared each PR's output against main's for the same project; every diff was then inspected manually with screenshots. Also diffed server-rendered HTML of /checkout (pr26) and /products (pr27) against main and POSTed 4 carts to /api/checkout on pr29 vs main. Verdicts: pr/25 broken (secondary text contrast drops from 5.98:1 to 2.56:1, WCAG AA failure on every page \u2014 judged a user-visible a11y regression; no functional breakage), pr/26 ok, pr/27 ok, pr/28 broken (card prices truncated / compare-at hidden), pr/29 ok, pr/30 broken (cart emptied on login/signup). Inconclusive/notes: pr/25 is the only judgement call \u2014 if the brand team deliberately accepts failing contrast it would be 'intended', but it is a measurable readability regression for real users. Firefox logs 'Failed to fetch RSC payload\u2026 falling back to browser navigation' on main and all PRs alike (not PR-related). Time spent \u2248 1h15m wall clock.",
+ "prs": [
+  {
+   "branch": "bug/07-mobile-sticky-cta-submits-nothing",
+   "blind": "pr/01",
+   "observations": [
+    {
+     "flow": "checkout",
+     "device": "mobile",
+     "browser": "chromium",
+     "network": "fast",
+     "verdict": "broken",
+     "note": "At 390px the new sticky 'Place order' bar replaces the in-form button and calls form.submit(), bypassing the React handler: tapping it with a complete valid form does a native GET navigation to /checkout?email=...&cardNumber=4242424242424242&expiry=12%2F29&cvc=123 (card number and CVC land in the URL), no POST to /api/checkout is made, no order/confirmation page appears, and the cart badge/localStorage still hold the items. On main the same tap goes to /orders/GS-xxxxx and empties the cart."
+    },
+    {
+     "flow": "checkout",
+     "device": "mobile",
+     "browser": "webkit",
+     "network": "fast",
+     "verdict": "broken",
+     "note": "Same on WebKit mobile: tap on the sticky CTA reloads /checkout with the form fields as a query string; empty-form tap also skips client validation (no field errors, focus stays on body) instead of flagging the 8 invalid fields as on main."
+    },
+    {
+     "flow": "checkout",
+     "device": "mobile",
+     "browser": "chromium",
+     "network": "slow-3g",
+     "verdict": "broken",
+     "note": "Reproduces under throttled network too; 'Processing payment\u2026' state never appears because the fetch is never issued."
+    },
+    {
+     "flow": "checkout",
+     "device": "desktop",
+     "browser": "chromium",
+     "network": "fast",
+     "verdict": "ok",
+     "note": "At 1440px (and 834px tablet, and Firefox) the original submit button is used; coupon totals, validation and order placement match main."
+    },
+    {
+     "flow": "other",
+     "device": "mobile",
+     "browser": "chromium",
+     "verdict": "ok",
+     "note": "Smoke of browse, product, cart, auth, search, settings, newsletter and mobile-nav matched main on this branch."
+    }
+   ]
+  },
+  {
+   "branch": "bug/08-ios-input-zoom",
+   "blind": "pr/02",
+   "observations": [
+    {
+     "flow": "checkout",
+     "device": "mobile",
+     "browser": "webkit",
+     "network": "fast",
+     "verdict": "broken",
+     "note": "Every text input and select (login, signup, checkout, settings, promo code, header search, newsletter) renders at computed font-size 14px instead of 16px, and control height drops from 46px to 38px. On iOS Safari form controls under 16px trigger automatic page zoom on focus, so tapping any field on a phone zooms the checkout/login page; main kept 16px (the iOS no-zoom threshold). Zoom itself not reproducible in desktop WebKit emulation (see notes)."
+    },
+    {
+     "flow": "auth",
+     "device": "mobile",
+     "browser": "chromium",
+     "verdict": "ok",
+     "note": "Login/signup/logout work and persist; text is not clipped; contrast of input text unchanged (ink on white)."
+    },
+    {
+     "flow": "checkout",
+     "device": "desktop",
+     "browser": "chromium",
+     "verdict": "ok",
+     "note": "Desktop (1440) and tablet (834) checkout, coupons, validation and order placement match main; only cosmetic difference is slightly smaller fields (promo input 38px next to 42px Apply button)."
+    },
+    {
+     "flow": "other",
+     "device": "desktop",
+     "browser": "firefox",
+     "verdict": "ok",
+     "note": "Browse, product, cart, search-filter, settings, newsletter smoke matched main on Firefox and Chromium."
+    }
+   ]
+  },
+  {
+   "branch": "bug/02-coupon-ignored-in-total",
+   "blind": "pr/03",
+   "observations": [
+    {
+     "flow": "checkout",
+     "device": "desktop",
+     "browser": "chromium",
+     "network": "fast",
+     "verdict": "broken",
+     "note": "Apply GAUNTLET10 at checkout with Trailhead Summer Gloves ($34): summary shows Discount \u2212$3.40 but Tax rises from $2.45 to $2.72 and Total is $44.72 (= 34 + 8 shipping + 2.72) \u2014 the discount is no longer subtracted from the total at all; main totals $41.05. The order page 'Total charged' repeats $44.72, so the customer is actually charged the undiscounted amount while being told the code applied."
+    },
+    {
+     "flow": "checkout",
+     "device": "mobile",
+     "browser": "webkit",
+     "network": "fast",
+     "verdict": "broken",
+     "note": "Same on mobile WebKit/Chromium, Firefox, tablet and slow-3G: with 2 lines ($204 subtotal, 10% off) total shown $220.32 vs $198.29 on main; express shipping total $239.32 vs $217.29."
+    },
+    {
+     "flow": "cart",
+     "device": "desktop",
+     "browser": "chromium",
+     "verdict": "ok",
+     "note": "Cart page subtotal/total (no coupon) and FREESHIP behaviour unchanged from main."
+    },
+    {
+     "flow": "other",
+     "device": "mobile",
+     "browser": "chromium",
+     "verdict": "ok",
+     "note": "Browse, product, auth, search, settings, newsletter and mobile-nav smoke matched main."
+    }
+   ]
+  },
+  {
+   "branch": "bug/21-cart-button-no-name",
+   "blind": "pr/04",
+   "observations": [
+    {
+     "flow": "cart",
+     "device": "desktop",
+     "browser": "chromium",
+     "network": "fast",
+     "verdict": "broken",
+     "note": "The header cart button lost its accessible name: with the aria-label removed its only children are an aria-hidden SVG and an aria-hidden count badge, so the accessibility tree exposes just 'button' (main: 'button \"Cart, 1 item\"'). axe-core (wcag2a) reports button-name on every page; getByRole('button', {name: /cart/i}) finds nothing; screen-reader users tabbing the header hear an unnamed button."
+    },
+    {
+     "flow": "mobile-nav",
+     "device": "mobile",
+     "browser": "chromium",
+     "verdict": "broken",
+     "note": "Same at 390px: tab order reaches an unnamed button between 'Log in' and the hero (main announces 'Cart, N items'). Visually the icon/badge still renders and opens the drawer."
+    },
+    {
+     "flow": "cart",
+     "device": "desktop",
+     "browser": "firefox",
+     "verdict": "ok",
+     "note": "Clicking the button still opens the drawer, badge count, Escape-to-close and cart page behaviour match main across Chromium/Firefox/WebKit."
+    },
+    {
+     "flow": "other",
+     "device": "tablet",
+     "browser": "chromium",
+     "verdict": "ok",
+     "note": "Browse, product, checkout, auth, search, settings, newsletter smoke matched main."
+    }
+   ]
+  },
+  {
+   "branch": "bug/27-search-suggestions-silently-empty",
+   "blind": "pr/05",
+   "observations": [
+    {
+     "flow": "search-filter",
+     "device": "desktop",
+     "browser": "chromium",
+     "network": "fast",
+     "verdict": "broken",
+     "note": "Header search typeahead is dead: typing 'glo' or 'light' shows no suggestions (main shows 3 and 4). The client calls /api/products?q=glo&limit=5 without a sort param; the branch calls .toLowerCase() on the null sort, throws, and the new catch returns {count:0, products:[]} with HTTP 200. curl confirms: /api/products?q=glo&limit=5 -> count 0 on the branch vs 3 on main (adding &sort=rating works)."
+    },
+    {
+     "flow": "search-filter",
+     "device": "mobile",
+     "browser": "webkit",
+     "network": "fast",
+     "verdict": "broken",
+     "note": "Same in the hamburger-menu search on mobile (Chromium, WebKit, slow-3G) and on Firefox desktop: no suggestion list ever appears."
+    },
+    {
+     "flow": "search-filter",
+     "device": "desktop",
+     "browser": "chromium",
+     "verdict": "ok",
+     "note": "Pressing Enter still navigates to /products?q=... and the server-rendered results page, category/sort/in-stock filters and empty state match main."
+    },
+    {
+     "flow": "other",
+     "device": "mobile",
+     "browser": "chromium",
+     "verdict": "ok",
+     "note": "Browse, product, cart, checkout, auth, settings, newsletter and mobile-nav smoke matched main."
+    }
+   ]
+  },
+  {
+   "branch": "bug/18-settings-lost-on-reload",
+   "blind": "pr/06",
+   "observations": [
+    {
+     "flow": "settings",
+     "device": "desktop",
+     "browser": "chromium",
+     "network": "fast",
+     "verdict": "broken",
+     "note": "Account settings no longer persist: log in as demo@gauntlet.shop, set display name 'Zed QA', city Ottawa, country CA, tick marketing, Save -> 'Saved.' appears but the greeting stays 'Hi, Demo Rider' and after reload every field is back to defaults (main shows 'Hi, Zed QA' and keeps all values). The gs_profile cookie is now set with Path=/api/account so the /account page (and checkout) never receive it."
+    },
+    {
+     "flow": "checkout",
+     "device": "mobile",
+     "browser": "webkit",
+     "network": "fast",
+     "verdict": "broken",
+     "note": "Knock-on: checkout prefill after saving settings gives name 'Demo Rider', empty city, country US on the branch vs 'Zed QA'/Ottawa/CA on main. Reproduced on Chromium desktop/tablet/mobile, Firefox and WebKit, and under slow-3G."
+    },
+    {
+     "flow": "auth",
+     "device": "desktop",
+     "browser": "firefox",
+     "verdict": "ok",
+     "note": "Login, wrong-password error, logout and signup behave as on main; session cookie unaffected."
+    },
+    {
+     "flow": "other",
+     "device": "mobile",
+     "browser": "chromium",
+     "verdict": "ok",
+     "note": "Browse, product, cart, checkout totals, search, newsletter and mobile-nav smoke matched main."
+    }
+   ]
+  },
+  {
+   "branch": "bug/11-firefox-coupon-does-nothing",
+   "blind": "pr/07",
+   "observations": [
+    {
+     "flow": "checkout",
+     "device": "desktop",
+     "browser": "firefox",
+     "verdict": "broken",
+     "note": "Firefox: on /checkout type GAUNTLET10 and click Apply \u2014 nothing happens: no 'applied' message, no discount line, Place order stays $81.44 (main: $74.10, \u2212$6.80 discount shown). Console: TypeError 'a.scrollIntoViewIfNeeded is not a function' (non-standard API, not implemented in Firefox). Same for FREESHIP."
+    },
+    {
+     "flow": "checkout",
+     "device": "desktop",
+     "browser": "chromium",
+     "verdict": "ok",
+     "note": "Chromium and WebKit: GAUNTLET10/FREESHIP apply correctly, invalid code shows error, order placed and cart cleared; identical to main (no visible scroll change on desktop since the summary is already in view)."
+    },
+    {
+     "flow": "checkout",
+     "device": "mobile",
+     "browser": "webkit",
+     "verdict": "ok",
+     "note": "Chromium 390 and WebKit 390: coupon apply + place order work (summary aside is hidden on mobile so the scroll call is a no-op)."
+    },
+    {
+     "flow": "checkout",
+     "device": "desktop",
+     "browser": "chromium",
+     "network": "slow-3g",
+     "verdict": "ok",
+     "note": "Slow-3G (CDP 400kbps/400ms) chromium: coupon, validation, order placement fine."
+    },
+    {
+     "flow": "browse",
+     "device": "desktop",
+     "verdict": "ok",
+     "note": "Smoke of browse/product/cart/auth/settings/search/newsletter/mobile-nav and axe (wcag2a/aa) on 7 pages: all identical to main across chromium/firefox/webkit at 1440/834/390."
+    }
+   ]
+  },
+  {
+   "branch": "bug/09-header-overflow-small-screens",
+   "blind": "pr/08",
+   "observations": [
+    {
+     "flow": "browse",
+     "device": "mobile",
+     "browser": "chromium",
+     "verdict": "broken",
+     "note": "390px (Pixel 7 / iPhone 13 emulation): the header now inlines a 192px search box, so the row overflows \u2014 account link sits at x=442\u2013480 and the cart button at x=484\u2013522, both outside the 390px viewport; document.scrollWidth=522 and the whole page scrolls horizontally. On main both icons are visible at x=294\u2013374 with no overflow."
+    },
+    {
+     "flow": "browse",
+     "device": "tablet",
+     "browser": "chromium",
+     "verdict": "broken",
+     "note": "834px (and 768px): logo + 6 nav links + search + 'Log in' + cart need 976px; cart button at x=938\u2013976 is clipped off-screen, scrollWidth 976 > 834, page scrolls sideways. Main shows the search in its own row under the nav with everything fitting."
+    },
+    {
+     "flow": "cart",
+     "device": "mobile",
+     "browser": "chromium",
+     "verdict": "broken",
+     "note": "Because the cart button is off-screen at 390/834, Playwright cannot click it (not stable/in viewport) in the drawer test; a user has to scroll the header sideways to reach the cart. Tablet (isMobile) newsletter Subscribe click also fails due to the overflowed layout viewport."
+    },
+    {
+     "flow": "mobile-nav",
+     "device": "mobile",
+     "browser": "chromium",
+     "verdict": "ok",
+     "note": "Hamburger still opens/closes (Escape, link navigation, aria-expanded) and the menu shows a second search box; header height unchanged (93px), menu offset unchanged vs main."
+    },
+    {
+     "flow": "search-filter",
+     "device": "desktop",
+     "browser": "firefox",
+     "verdict": "ok",
+     "note": "1440 and 1024: inline header search unchanged, suggestions + Enter navigation work; identical to main."
+    },
+    {
+     "flow": "browse",
+     "device": "mobile",
+     "browser": "webkit",
+     "verdict": "ok",
+     "note": "Horizontal overflow also reproduced in mobile WebKit (scrollWidth 522 on / and /about). Other flows (checkout, auth, settings) pass when driven via direct URLs."
+    }
+   ]
+  },
+  {
+   "branch": "control/02-about-copy",
+   "blind": "pr/09",
+   "observations": [
+    {
+     "flow": "other",
+     "device": "desktop",
+     "browser": "chromium",
+     "verdict": "ok",
+     "note": "/about renders the new sentence 'We ship every order from our workshop in Montr\u00e9al.' correctly (accent intact, no layout change, no overflow). Pure copy change; note the Careers paragraph still says the team is in Toronto \u2014 a copy inconsistency, not a functional regression."
+    },
+    {
+     "flow": "browse",
+     "device": "mobile",
+     "browser": "webkit",
+     "verdict": "ok",
+     "note": "Full probe suite (browse, product, cart, checkout incl. coupons/declined card, auth, settings, search, newsletter, mobile-nav, axe) passes at 390/834/1440 in chromium/firefox/webkit \u2014 identical to main. One webkit signup timeout was a flake (passed 3/3 on rerun)."
+    },
+    {
+     "flow": "checkout",
+     "device": "desktop",
+     "browser": "chromium",
+     "network": "slow-3g",
+     "verdict": "ok",
+     "note": "Slow-3G checkout and search flows pass."
+    }
+   ]
+  },
+  {
+   "branch": "bug/01-checkout-second-click-noop",
+   "blind": "pr/10",
+   "observations": [
+    {
+     "flow": "checkout",
+     "device": "desktop",
+     "browser": "chromium",
+     "verdict": "broken",
+     "note": "Click 'Place order' with the form empty \u2192 validation errors appear (same as main). Fill all fields correctly and click 'Place order' again \u2192 nothing happens: no request, no spinner, no error, button stays 'Place order \u00b7 $53.36', still on /checkout after further clicks. On main the same sequence navigates to /orders/GS-xxxxx. The inFlight guard is set before validate() and only reset in the fetch finally-block, so the early validation return leaves it stuck. Reproduced in chromium, firefox, webkit at 1440/834/390."
+    },
+    {
+     "flow": "checkout",
+     "device": "mobile",
+     "browser": "webkit",
+     "network": "slow-3g",
+     "verdict": "broken",
+     "note": "Same stuck-after-validation repro at 390 in Chromium and WebKit; also under slow-3G throttling."
+    },
+    {
+     "flow": "checkout",
+     "device": "desktop",
+     "browser": "firefox",
+     "verdict": "ok",
+     "note": "If the form is filled correctly on the first attempt, the order is placed and cart cleared as on main; declined card (4000\u20260002) shows error and retry succeeds; double-click still produces exactly one POST (also true on main because the button is disabled while submitting)."
+    },
+    {
+     "flow": "cart",
+     "device": "desktop",
+     "verdict": "ok",
+     "note": "Browse/product/cart/auth/settings/search/newsletter/mobile-nav/axe smoke identical to main."
+    }
+   ]
+  },
+  {
+   "branch": "bug/13-remove-drops-all-colours",
+   "blind": "pr/11",
+   "observations": [
+    {
+     "flow": "cart",
+     "device": "desktop",
+     "browser": "chromium",
+     "verdict": "broken",
+     "note": "Add Ridgeline Insulated Gloves in Charcoal and again in Moss, open /cart (2 lines for the gloves + 1 Transit Musette), click 'Remove' on the Moss line \u2192 BOTH glove lines disappear (3 lines \u2192 1, badge 4 \u2192 1). On main only the Moss line is removed (3 \u2192 2, badge 2). remove() now filters by productId only, ignoring colour. Reproduced in chromium/firefox/webkit at 1440/834/390."
+    },
+    {
+     "flow": "cart",
+     "device": "mobile",
+     "browser": "webkit",
+     "network": "slow-3g",
+     "verdict": "broken",
+     "note": "Same repro at 390 (Pixel 7 and iPhone 13 emulation) and under slow-3G."
+    },
+    {
+     "flow": "cart",
+     "device": "desktop",
+     "browser": "firefox",
+     "verdict": "ok",
+     "note": "Removing a product that is in the cart in a single colour behaves as on main; qty +/- , persistence across reload, empty state and badge all fine."
+    },
+    {
+     "flow": "checkout",
+     "device": "desktop",
+     "verdict": "ok",
+     "note": "Checkout, auth, settings, search, newsletter, mobile-nav, browse and axe smoke identical to main."
+    }
+   ]
+  },
+  {
+   "branch": "bug/03-cart-badge-stale",
+   "blind": "pr/12",
+   "observations": [
+    {
+     "flow": "cart",
+     "device": "desktop",
+     "browser": "chromium",
+     "verdict": "broken",
+     "note": "Header cart badge no longer tracks cart changes other than 'add': with 4 items (badge 4), remove the Moss glove line on /cart \u2192 lines update but the badge still says 4 (main: 2); press + on a line \u2192 badge unchanged; remove every line \u2192 cart shows 'Your cart is empty' but badge still shows 3 and aria-label reads 'Cart, 3 items' (main: badge gone, 'Cart, 0 items'). Reproduced in chromium/firefox/webkit at 1440/834/390."
+    },
+    {
+     "flow": "checkout",
+     "device": "desktop",
+     "browser": "firefox",
+     "network": "slow-3g",
+     "verdict": "broken",
+     "note": "After placing an order the cart is cleared but the badge keeps showing the old count (1) on the order confirmation page; on main the badge disappears. Also reproduced on mobile and under slow-3G."
+    },
+    {
+     "flow": "cart",
+     "device": "mobile",
+     "browser": "webkit",
+     "verdict": "broken",
+     "note": "Same stale-badge behaviour at 390 in Chromium and WebKit; a reload resyncs the badge (count re-derived from storage on hydration), so the bug shows only within a session."
+    },
+    {
+     "flow": "product",
+     "device": "desktop",
+     "browser": "chromium",
+     "verdict": "ok",
+     "note": "Adding to cart still increments the badge correctly and opens the drawer; cart contents/totals themselves are correct \u2014 only the badge/aria-label count is stale."
+    },
+    {
+     "flow": "browse",
+     "device": "desktop",
+     "verdict": "ok",
+     "note": "Browse, auth, settings, search, newsletter, mobile-nav and axe smoke identical to main."
+    }
+   ]
+  },
+  {
+   "branch": "bug/19-cannot-unsubscribe-marketing",
+   "blind": "pr/13",
+   "observations": [
+    {
+     "flow": "settings",
+     "device": "desktop",
+     "browser": "chromium",
+     "network": "fast",
+     "verdict": "broken",
+     "note": "Log in as demo@gauntlet.shop, tick 'Marketing emails', Save, reload: checkbox is checked (ok). Untick it, Save (toast 'Saved'), reload: checkbox is checked again and GET /api/account/settings still returns marketingEmails=true. On main the opt-out persists as false. Users cannot opt out of marketing email once opted in."
+    },
+    {
+     "flow": "settings",
+     "device": "mobile",
+     "browser": "firefox",
+     "network": "fast",
+     "verdict": "broken",
+     "note": "Same repro on Firefox mobile emulation and on WebKit desktop: after saving with the box unticked and reloading, marketing stays true (main: false). Other fields (name, city Ottawa, country) save correctly on the same submit."
+    },
+    {
+     "flow": "settings",
+     "device": "mobile",
+     "browser": "chromium",
+     "network": "slow-3g",
+     "verdict": "broken",
+     "note": "Opt-out still fails to persist under Slow-3G; name/city changes in the same save do persist, so the regression is isolated to the marketing-emails flag."
+    },
+    {
+     "flow": "auth",
+     "device": "desktop",
+     "browser": "webkit",
+     "network": "fast",
+     "verdict": "ok",
+     "note": "Login, bad-credentials message, session survives reload, logout, /account redirect to /login?next=/account, signup + re-login all match main (serial re-run after a load-related timeout)."
+    },
+    {
+     "flow": "checkout",
+     "device": "mobile",
+     "browser": "chromium",
+     "network": "slow-3g",
+     "verdict": "ok",
+     "note": "Guest and logged-in checkout reach /orders/<id> with correct totals and the order shows in account history, same as main. Saved shipping prefill from settings works."
+    },
+    {
+     "flow": "browse",
+     "device": "tablet",
+     "browser": "chromium",
+     "network": "fast",
+     "verdict": "ok",
+     "note": "Home, catalogue, category filters, sort, empty search and 404 page identical to main; cart, product, search, newsletter and mobile-nav smoke all pass across the three engines."
+    }
+   ]
+  },
+  {
+   "branch": "bug/14-checkout-fails-on-slow-api",
+   "blind": "pr/14",
+   "observations": [
+    {
+     "flow": "checkout",
+     "device": "desktop",
+     "browser": "chromium",
+     "network": "slow-3g",
+     "verdict": "broken",
+     "note": "With network RTT at 3000ms (Slow-3G throughput), Place order on pr/14 shows 'Network error \u2014 your card was not charged. Please try again.' after 3.4s, the POST is aborted (net::ERR_ABORTED), no order cookie and no order in history; main under the identical condition completes the order and lands on /orders/<id> after ~9s. Under Chrome's default Slow-3G preset (2000ms) both builds succeed (POST took ~2.1s), so this needs a slow-ish connection or a slow processor."
+    },
+    {
+     "flow": "checkout",
+     "device": "desktop",
+     "browser": "firefox",
+     "network": "fast",
+     "verdict": "broken",
+     "note": "Simulating the payment processor responding 2.5s slower (route delay on /api/checkout, total ~3.1s), main places the order in all three engines; pr/14 fails in Chromium, Firefox (NS_BINDING_ABORTED) and WebKit with the same 'Network error' message and no order created. The new AbortSignal.timeout(3000) hard-fails any checkout that takes over 3s."
+    },
+    {
+     "flow": "checkout",
+     "device": "mobile",
+     "browser": "chromium",
+     "network": "slow-3g",
+     "verdict": "ok",
+     "note": "Under the standard Slow-3G preset, guest and logged-in checkout complete and the order page/history are correct, identical to main. Declined-card (4000...0002) and validation errors behave as on main."
+    },
+    {
+     "flow": "checkout",
+     "device": "tablet",
+     "browser": "chromium",
+     "network": "fast",
+     "verdict": "ok",
+     "note": "Fast-network checkout on desktop/tablet/mobile in Chromium, Firefox and WebKit lands on /orders/<id> with correct line items and totals; cart is cleared afterwards."
+    },
+    {
+     "flow": "cart",
+     "device": "desktop",
+     "browser": "webkit",
+     "network": "fast",
+     "verdict": "ok",
+     "note": "Add to cart, badge count, drawer contents, persistence across reload all match main; browse, auth, search, settings, newsletter, mobile-nav smoke pass."
+    }
+   ]
+  },
+  {
+   "branch": "bug/20-modal-focus-escapes",
+   "blind": "pr/15",
+   "observations": [
+    {
+     "flow": "cart",
+     "device": "desktop",
+     "browser": "chromium",
+     "network": "fast",
+     "verdict": "broken",
+     "note": "On a product page click 'Add to cart' to open the cart dialog, then press Tab repeatedly: after 6 Tabs focus leaves the dialog 3 times and lands on page content behind it (e.g. header nav links); Shift+Tab from the Close button moves focus out to the footer 'Careers' link. On main focus loops inside the dialog in both directions. Keyboard/screen-reader users lose the modal focus trap."
+    },
+    {
+     "flow": "cart",
+     "device": "desktop",
+     "browser": "webkit",
+     "network": "fast",
+     "verdict": "broken",
+     "note": "Same repro in WebKit (3 of 6 Tabs land outside the dialog) and Firefox (Shift+Tab from Close exits the dialog). Escape still closes the dialog and restores focus to the add-to-cart button, so only the Tab loop regressed."
+    },
+    {
+     "flow": "cart",
+     "device": "mobile",
+     "browser": "firefox",
+     "network": "fast",
+     "verdict": "broken",
+     "note": "Focus escapes the open cart dialog with a hardware keyboard on mobile emulation too (fails on all 7 engine/device combinations tested; main passes all 7)."
+    },
+    {
+     "flow": "cart",
+     "device": "mobile",
+     "browser": "chromium",
+     "network": "slow-3g",
+     "verdict": "ok",
+     "note": "Pointer/touch use of the cart (add, badge, drawer items, subtotal, remove, persistence across reload, checkout link) is identical to main."
+    },
+    {
+     "flow": "checkout",
+     "device": "desktop",
+     "browser": "firefox",
+     "network": "fast",
+     "verdict": "ok",
+     "note": "Guest and logged-in checkout complete to /orders/<id>; browse, product, auth, search, settings, newsletter and mobile-nav smoke tests pass on all engines, same as main."
+    }
+   ]
+  },
+  {
+   "branch": "bug/16-search-suggestions-race",
+   "blind": "pr/16",
+   "observations": [
+    {
+     "flow": "search-filter",
+     "device": "desktop",
+     "browser": "chromium",
+     "network": "fast",
+     "verdict": "broken",
+     "note": "Type 'glo' in the header search, then quickly change it to 'light' while the first request is still in flight (simulated by delaying the ?q=glo response): pr/16 ends up showing the glove suggestions (Ridgeline Insulated Gloves, Trailhead Summer Gloves, Stormline Waterproof Gloves) for the query 'light'; main shows Transit Musette / Beacon 800 Front Light / Ember Rear Light / Commuter Helmet MIPS. Out-of-order responses are no longer discarded."
+    },
+    {
+     "flow": "search-filter",
+     "device": "mobile",
+     "browser": "webkit",
+     "network": "fast",
+     "verdict": "broken",
+     "note": "Clear the search box while a suggestion request is pending: on pr/16 the stale suggestion popup appears/remains with an empty input (Chromium, Firefox and WebKit, desktop and mobile); on main nothing is shown. Also reproduced under Chromium Slow-3G where the race is easy to hit by typing normally."
+    },
+    {
+     "flow": "search-filter",
+     "device": "tablet",
+     "browser": "chromium",
+     "network": "fast",
+     "verdict": "ok",
+     "note": "Typing a single query slowly and waiting gives correct suggestions; selecting a suggestion navigates to the product; full results page /products?q=... and category/sort filters identical to main."
+    },
+    {
+     "flow": "cart",
+     "device": "desktop",
+     "browser": "firefox",
+     "network": "fast",
+     "verdict": "ok",
+     "note": "Product add, cart persistence, checkout, auth, settings, newsletter, mobile-nav and modal keyboard behaviour all match main across engines."
+    }
+   ]
+  },
+  {
+   "branch": "control/03-extract-nav-config",
+   "blind": "pr/17",
+   "observations": [
+    {
+     "flow": "browse",
+     "device": "desktop",
+     "browser": "chromium",
+     "network": "fast",
+     "verdict": "ok",
+     "note": "Header nav shows Shop all / Gloves / Apparel / Bags / Lights / About; each link navigates to the correct filtered catalogue (correct product sets and count) exactly as on main, in Chromium, Firefox and WebKit."
+    },
+    {
+     "flow": "mobile-nav",
+     "device": "mobile",
+     "browser": "webkit",
+     "network": "fast",
+     "verdict": "ok",
+     "note": "Hamburger button has an accessible name, opens the menu with the same 6 links, tapping a category navigates and closes the menu, Escape closes it; identical to main on Chromium/Firefox/WebKit mobile and tablet."
+    },
+    {
+     "flow": "checkout",
+     "device": "mobile",
+     "browser": "chromium",
+     "network": "slow-3g",
+     "verdict": "ok",
+     "note": "Guest and logged-in checkout, cart persistence, product add under Slow-3G all complete to the order page like main."
+    },
+    {
+     "flow": "auth",
+     "device": "desktop",
+     "browser": "firefox",
+     "network": "fast",
+     "verdict": "ok",
+     "note": "Login/signup/logout/redirects, settings save+reload (incl. marketing opt-out), newsletter, search suggestions and race, modal keyboard trap all match main. No behavioural difference found; diff is a nav-constant move to lib/nav.ts."
+    }
+   ]
+  },
+  {
+   "branch": "bug/10-safari-cart-never-hydrates",
+   "blind": "pr/18",
+   "observations": [
+    {
+     "flow": "cart",
+     "device": "desktop",
+     "browser": "webkit",
+     "network": "fast",
+     "verdict": "broken",
+     "note": "In WebKit (Safari engine) add a product to the cart, then open /cart: the page stays on 'Loading your cart\u2026' indefinitely and the header cart badge never appears, so items cannot be viewed or removed; after reload the cart still never renders. main WebKit shows badge=2 and the items, persisted across reload. Cause: window.requestIdleCallback is undefined in WebKit so cart hydration never runs."
+    },
+    {
+     "flow": "checkout",
+     "device": "mobile",
+     "browser": "webkit",
+     "network": "fast",
+     "verdict": "broken",
+     "note": "On WebKit mobile emulation, /checkout never enables 'Place order' (the cart never hydrates), so Safari users cannot buy anything; guest and logged-in checkout both time out. Main completes both on WebKit mobile."
+    },
+    {
+     "flow": "product",
+     "device": "desktop",
+     "browser": "webkit",
+     "network": "fast",
+     "verdict": "broken",
+     "note": "Add to cart on the product page opens the dialog but the dialog/cart badge never reflect the added item in WebKit (desktop and mobile); same steps on main update badge and drawer."
+    },
+    {
+     "flow": "cart",
+     "device": "mobile",
+     "browser": "chromium",
+     "network": "slow-3g",
+     "verdict": "ok",
+     "note": "In Chromium (desktop/tablet/mobile, fast and Slow-3G) and Firefox the cart hydrates, badge/drawer/persistence and checkout all match main."
+    },
+    {
+     "flow": "browse",
+     "device": "tablet",
+     "browser": "chromium",
+     "network": "fast",
+     "verdict": "ok",
+     "note": "Home, catalogue, search, auth, settings, newsletter and mobile-nav behave identically to main on all engines; the regression is limited to cart-dependent UI in WebKit."
+    }
+   ]
+  },
+  {
+   "branch": "bug/26-newsletter-success-not-stored",
+   "blind": "pr/19",
+   "observations": [
+    {
+     "flow": "newsletter",
+     "device": "desktop",
+     "browser": "chromium",
+     "network": "fast",
+     "verdict": "broken",
+     "note": "As a guest (not logged in), submit a valid email in the footer newsletter form: the success toast 'Thanks! Check your inbox' appears, but after reload (or navigating to /products) the footer shows the empty form again instead of 'You're subscribed as guest@example.com'. On main the subscribed state persists. POST /api/newsletter no longer returns a Set-Cookie for gs_newsletter unless a session cookie is present. Reproduced on chromium desktop/tablet/mobile, firefox, webkit desktop/mobile."
+    },
+    {
+     "flow": "newsletter",
+     "device": "mobile",
+     "browser": "webkit",
+     "network": "fast",
+     "verdict": "broken",
+     "note": "Same guest repro at 390px on Pixel 7 emulation and iPhone 13 (webkit): success message shown, preference lost on reload."
+    },
+    {
+     "flow": "newsletter",
+     "device": "desktop",
+     "browser": "chromium",
+     "network": "fast",
+     "verdict": "ok",
+     "note": "Signed-in (demo@gauntlet.shop) subscribe is remembered across reload, same as main; invalid email still shows the inline alert + aria-invalid."
+    },
+    {
+     "flow": "other",
+     "device": "desktop",
+     "browser": "chromium",
+     "network": "fast",
+     "verdict": "ok",
+     "note": "Smoke of browse/product/cart/checkout/auth/search-filter/settings/newsletter (full 258-test Playwright suite, chromium 1440/834/390, firefox 1440, webkit 1440/390) matches main (pr/19 only affects the newsletter route)."
+    }
+   ]
+  },
+  {
+   "branch": "bug/06-mobile-menu-blocks-taps",
+   "blind": "pr/20",
+   "observations": [
+    {
+     "flow": "mobile-nav",
+     "device": "mobile",
+     "browser": "chromium",
+     "network": "fast",
+     "verdict": "broken",
+     "note": "At 390px with the hamburger menu CLOSED, the mobile-menu panel is still rendered (opacity:0, pointer-events:auto, fixed full-screen below the header, z-40). document.elementFromPoint at the viewport centre returns a link inside the hidden menu, so every tap on page content below the header is swallowed: tapping a featured product card on the home page does not navigate (main navigates), Playwright clicks on product cards/forms/buttons time out because they are covered. 25 of the suite's mobile tests that pass on main (login, signup, add to cart, cart qty, checkout, settings, search apply, newsletter) all fail on pr/20 at 390px in both chromium and webkit. Also reproduces at 767px wide."
+    },
+    {
+     "flow": "mobile-nav",
+     "device": "mobile",
+     "browser": "webkit",
+     "network": "fast",
+     "verdict": "broken",
+     "note": "Keyboard/screen-reader: the closed menu is aria-hidden=\"true\" but its 8 links/search input remain focusable; pressing Tab from the header moves focus into the invisible menu (6th Tab lands on a hidden link). On main the closed menu is not in the DOM. Also the toggle-close path: after closing the menu, the product grid is still not tappable."
+    },
+    {
+     "flow": "mobile-nav",
+     "device": "mobile",
+     "browser": "chromium",
+     "network": "fast",
+     "verdict": "ok",
+     "note": "Opening the menu works and shows the nav links, Escape closes it (visually), the fade animation renders."
+    },
+    {
+     "flow": "browse",
+     "device": "tablet",
+     "browser": "chromium",
+     "network": "fast",
+     "verdict": "ok",
+     "note": "At 834px (and 844px landscape phone) the menu wrapper is display:none (md:hidden), so product cards are clickable and all tablet/desktop tests match main; desktop 1440 (chromium/firefox/webkit) unaffected."
+    }
+   ]
+  },
+  {
+   "branch": "bug/23-escape-does-not-close-dialog",
+   "blind": "pr/21",
+   "observations": [
+    {
+     "flow": "cart",
+     "device": "desktop",
+     "browser": "chromium",
+     "network": "fast",
+     "verdict": "broken",
+     "note": "Click 'Add to cart' on a product page (mouse): the cart drawer opens but focus is NOT moved into the dialog (document.activeElement stays on the Add to cart button; on main it moves to the drawer's Close button). Pressing Escape then does nothing - the drawer stays open (main closes it). Reproduced on chromium desktop/tablet/mobile, firefox, webkit desktop/mobile; also via the header cart button."
+    },
+    {
+     "flow": "cart",
+     "device": "desktop",
+     "browser": "firefox",
+     "network": "fast",
+     "verdict": "broken",
+     "note": "Keyboard: open the drawer with Enter on 'Add to cart', then press Tab - focus leaves the modal on the very first Tab and walks the page behind the aria-modal dialog (product cards, header). On main Tab/Shift+Tab cycle within the drawer. Focus trap and Escape-to-close are both lost unless the user first clicks inside the panel."
+    },
+    {
+     "flow": "product",
+     "device": "desktop",
+     "browser": "webkit",
+     "network": "fast",
+     "verdict": "ok",
+     "note": "Drawer content (item, colour, qty, subtotal), Close button, backdrop click, Checkout/View cart links and badge count all behave as on main."
+    },
+    {
+     "flow": "other",
+     "device": "desktop",
+     "browser": "chromium",
+     "network": "fast",
+     "verdict": "ok",
+     "note": "Smoke of browse/product/cart/checkout/auth/search-filter/settings/newsletter (full 258-test Playwright suite, chromium 1440/834/390, firefox 1440, webkit 1440/390) matches main (modal is only used by the cart drawer)."
+    }
+   ]
+  },
+  {
+   "branch": "bug/28-order-confirmation-not-found",
+   "blind": "pr/22",
+   "observations": [
+    {
+     "flow": "checkout",
+     "device": "desktop",
+     "browser": "chromium",
+     "network": "fast",
+     "verdict": "broken",
+     "note": "Complete checkout with a valid card (4242...): the API returns ok and the app navigates to /orders/GS-XXXXX, but the confirmation page renders 'We couldn't find that order - Order GS-XXXXX isn't in this browser's recent orders' with only a Continue shopping link; the cart has already been emptied so the user has no record of what they bought. On main the page shows 'Thanks, Casey!' with items, totals and ETA. The gs_orders cookie is now written as raw JSON while readOrders still base64-decodes it. Reproduced on chromium desktop/tablet/mobile, firefox, webkit desktop/mobile."
+    },
+    {
+     "flow": "settings",
+     "device": "desktop",
+     "browser": "chromium",
+     "network": "fast",
+     "verdict": "broken",
+     "note": "After placing orders and logging in as demo@gauntlet.shop, the account page's 'Recent orders' shows 'No orders yet in this browser' (main lists each order with a working link)."
+    },
+    {
+     "flow": "checkout",
+     "device": "mobile",
+     "browser": "webkit",
+     "network": "fast",
+     "verdict": "broken",
+     "note": "Same repro at 390px (Pixel 7 / iPhone 13): order confirmation page shows the not-found state."
+    },
+    {
+     "flow": "checkout",
+     "device": "desktop",
+     "browser": "chromium",
+     "network": "fast",
+     "verdict": "ok",
+     "note": "Pre-payment behaviour matches main: coupon GAUNTLET10 discount, express shipping fee, field validation + focus on first error, declined card 4000000000000002 error, prefill from logged-in account."
+    },
+    {
+     "flow": "other",
+     "device": "desktop",
+     "browser": "chromium",
+     "network": "fast",
+     "verdict": "ok",
+     "note": "Smoke of browse/product/cart/checkout/auth/search-filter/settings/newsletter (full 258-test Playwright suite, chromium 1440/834/390, firefox 1440, webkit 1440/390) matches main"
+    }
+   ]
+  },
+  {
+   "branch": "bug/15-hero-image-blocks-lcp",
+   "blind": "pr/23",
+   "observations": [
+    {
+     "flow": "browse",
+     "device": "desktop",
+     "browser": "chromium",
+     "network": "slow-3g",
+     "verdict": "broken",
+     "note": "Home hero replaced by /hero.png: a 3,889,553-byte 1440x900 PNG served with `unoptimized` (no resizing/srcset, same 3.9 MB on a 390px phone) vs a 1,334-byte SVG on main. On CDP slow-3G (400 kbps, 400 ms RTT) the hero image never finishes loading within 60 s (main: 1.4 s); on fast-3G (1.6 Mbps) it takes ~20 s to appear (main 0.5 s); even at 10 Mbps it is 3.8 s vs 0.2 s. Page weight for the home page goes from ~46 KB to ~3.9 MB. The dark background keeps the hero text readable while the image is missing, so this is a performance/LCP regression rather than a functional one."
+    },
+    {
+     "flow": "browse",
+     "device": "mobile",
+     "browser": "chromium",
+     "network": "slow-3g",
+     "verdict": "broken",
+     "note": "Same at 390px Pixel 7 emulation on fast-3G: hero completes at ~20 s and downloads 3.9 MB; on main 0.5 s / 23 KB."
+    },
+    {
+     "flow": "browse",
+     "device": "desktop",
+     "browser": "chromium",
+     "network": "fast",
+     "verdict": "ok",
+     "note": "On an unthrottled connection the image loads (HTTP 200, decodes, naturalWidth>0), the hero text/CTA render and no console errors; all other flows identical to main on all 6 projects."
+    },
+    {
+     "flow": "browse",
+     "device": "desktop",
+     "browser": "webkit",
+     "network": "fast",
+     "verdict": "ok",
+     "note": "Firefox and WebKit desktop render the new hero correctly on a fast connection."
+    }
+   ]
+  },
+  {
+   "branch": "bug/04-price-sort-reversed",
+   "blind": "pr/24",
+   "observations": [
+    {
+     "flow": "search-filter",
+     "device": "desktop",
+     "browser": "chromium",
+     "network": "fast",
+     "verdict": "broken",
+     "note": "Catalogue sort is inverted: /products?sort=price-asc ('Price: low to high') now lists $159, $145, $125, $119, ... (descending) and sort=price-desc ('Price: high to low') lists $12, $19, $22, $28, ... (ascending). Main shows the correct order for both. Reproduced via the Sort select + Apply filters on chromium desktop/tablet/mobile, firefox, webkit desktop/mobile."
+    },
+    {
+     "flow": "search-filter",
+     "device": "mobile",
+     "browser": "webkit",
+     "network": "fast",
+     "verdict": "broken",
+     "note": "Same inverted price sort at 390px (Pixel 7 and iPhone 13)."
+    },
+    {
+     "flow": "search-filter",
+     "device": "desktop",
+     "browser": "firefox",
+     "network": "fast",
+     "verdict": "ok",
+     "note": "Featured and Top-rated sorts, category links, max price, in-stock filter, search suggestions and q= results match main."
+    },
+    {
+     "flow": "other",
+     "device": "desktop",
+     "browser": "chromium",
+     "network": "fast",
+     "verdict": "ok",
+     "note": "Smoke of browse/product/cart/checkout/auth/search-filter/settings/newsletter (full 258-test Playwright suite, chromium 1440/834/390, firefox 1440, webkit 1440/390) matches main"
+    }
+   ]
+  },
+  {
+   "branch": "bug/22-muted-text-contrast",
+   "blind": "pr/25",
+   "observations": [
+    {
+     "flow": "browse",
+     "device": "desktop",
+     "browser": "chromium",
+     "verdict": "broken",
+     "note": "Secondary text token --color-muted changed #5b6472 -> #9aa3ad: product blurbs, category labels, breadcrumbs, ratings, result count now 2.56:1 contrast on white (2.43:1 on the paper background) vs 5.98:1 on main; axe color-contrast (WCAG AA 1.4.3) reports 59 failing nodes on /products and 28 on / where main reports 0. Repro: open /products, inspect any .text-muted element (computed rgb(154,163,173))."
+    },
+    {
+     "flow": "product",
+     "device": "mobile",
+     "browser": "webkit",
+     "verdict": "broken",
+     "note": "Same low-contrast grey on the product page (28 axe color-contrast nodes vs 0 on main) \u2014 colour swatch label, description text and spec labels are hard to read on a 390px screen; also reproduced in Firefox and WebKit."
+    },
+    {
+     "flow": "checkout",
+     "device": "desktop",
+     "browser": "firefox",
+     "verdict": "broken",
+     "note": "Checkout helper text ('This is a demo store\u2026', Arrives-by dates, Subtotal/Shipping/Tax labels) and cart line 'Colour: \u2026/$x each' also drop to ~2.5:1 (8 and 9 axe contrast failures vs 0 on main). Functionally the flows still complete."
+    },
+    {
+     "flow": "cart",
+     "device": "desktop",
+     "browser": "chromium",
+     "verdict": "ok",
+     "note": "Cart math, qty controls, drawer, checkout, order placement, auth, settings, newsletter and mobile nav all behave identically to main; the regression is purely the readability/contrast of secondary text."
+    },
+    {
+     "flow": "mobile-nav",
+     "device": "mobile",
+     "browser": "chromium",
+     "verdict": "ok",
+     "note": "Hamburger menu open/Escape/navigate unchanged."
+    }
+   ]
+  },
+  {
+   "branch": "control/05-extract-checkout-field",
+   "blind": "pr/26",
+   "observations": [
+    {
+     "flow": "checkout",
+     "device": "desktop",
+     "browser": "chromium",
+     "verdict": "ok",
+     "note": "Extracted Field component: server-rendered /checkout HTML is byte-identical to main (ignoring chunk hashes). All 9 inputs keep their label association, autocomplete, inputmode, placeholder; empty submit shows the 8 field errors with aria-invalid + aria-describedby pointing at the error text and focus moved to the first invalid field; errors clear on typing; coupon valid/invalid messages, express shipping, declined card and successful order (GS-xxxxx page with correct totals) all match main."
+    },
+    {
+     "flow": "checkout",
+     "device": "mobile",
+     "browser": "webkit",
+     "verdict": "ok",
+     "note": "Mobile order-summary <details> and the full checkout flow identical to main at 390px; also identical in Firefox, WebKit and tablet."
+    },
+    {
+     "flow": "checkout",
+     "device": "desktop",
+     "browser": "chromium",
+     "network": "slow-3g",
+     "verdict": "ok",
+     "note": "Under throttled network (400ms RTT, 50KB/s) checkout validation, coupon and order placement still match main."
+    },
+    {
+     "flow": "browse",
+     "device": "desktop",
+     "browser": "chromium",
+     "verdict": "ok",
+     "note": "Home and /products render 6/18 cards, filters/sort/max/instock and search suggestions identical to main."
+    },
+    {
+     "flow": "cart",
+     "device": "mobile",
+     "browser": "chromium",
+     "verdict": "ok",
+     "note": "Add 2 products, qty +/-, reload persistence, drawer subtotal and totals identical to main (iPhone 13 emulation)."
+    },
+    {
+     "flow": "checkout",
+     "device": "desktop",
+     "browser": "webkit",
+     "verdict": "ok",
+     "note": "Validation errors, coupon GAUNTLET10, express shipping, declined card 4000\u20260002, successful order and order page identical to main."
+    },
+    {
+     "flow": "auth",
+     "device": "tablet",
+     "browser": "chromium",
+     "verdict": "ok",
+     "note": "Login/signup/logout, guest cart kept after login, settings save+reload, newsletter subscribe+persist identical to main (834px)."
+    },
+    {
+     "flow": "mobile-nav",
+     "device": "mobile",
+     "browser": "chromium",
+     "verdict": "ok",
+     "note": "Hamburger opens full-height menu, aria-expanded toggles, Escape closes, link navigates and closes menu \u2014 same as main."
+    }
+   ]
+  },
+  {
+   "branch": "control/04-card-radius",
+   "blind": "pr/27",
+   "observations": [
+    {
+     "flow": "browse",
+     "device": "desktop",
+     "browser": "chromium",
+     "verdict": "ok",
+     "note": ".card border-radius goes from 12px to 16px (computed); cards, badges, images (overflow-hidden) and card screenshots otherwise identical; server HTML of /products identical to main apart from the class name."
+    },
+    {
+     "flow": "browse",
+     "device": "mobile",
+     "browser": "chromium",
+     "verdict": "ok",
+     "note": "Home category cards, product cards, cart summary card, auth form card, settings card and empty states render correctly at 390px with the rounder corners \u2014 no clipping or layout shift."
+    },
+    {
+     "flow": "checkout",
+     "device": "tablet",
+     "browser": "firefox",
+     "verdict": "ok",
+     "note": "Checkout/auth/settings forms (all .card) unaffected; full flows identical to main in chromium, firefox and webkit."
+    },
+    {
+     "flow": "browse",
+     "device": "desktop",
+     "browser": "chromium",
+     "verdict": "ok",
+     "note": "Home and /products render 6/18 cards, filters/sort/max/instock and search suggestions identical to main."
+    },
+    {
+     "flow": "cart",
+     "device": "mobile",
+     "browser": "chromium",
+     "verdict": "ok",
+     "note": "Add 2 products, qty +/-, reload persistence, drawer subtotal and totals identical to main (iPhone 13 emulation)."
+    },
+    {
+     "flow": "checkout",
+     "device": "desktop",
+     "browser": "webkit",
+     "verdict": "ok",
+     "note": "Validation errors, coupon GAUNTLET10, express shipping, declined card 4000\u20260002, successful order and order page identical to main."
+    },
+    {
+     "flow": "auth",
+     "device": "tablet",
+     "browser": "chromium",
+     "verdict": "ok",
+     "note": "Login/signup/logout, guest cart kept after login, settings save+reload, newsletter subscribe+persist identical to main (834px)."
+    },
+    {
+     "flow": "mobile-nav",
+     "device": "mobile",
+     "browser": "chromium",
+     "verdict": "ok",
+     "note": "Hamburger opens full-height menu, aria-expanded toggles, Escape closes, link navigates and closes menu \u2014 same as main."
+    }
+   ]
+  },
+  {
+   "branch": "bug/24-card-price-clipped",
+   "blind": "pr/28",
+   "observations": [
+    {
+     "flow": "browse",
+     "device": "desktop",
+     "browser": "chromium",
+     "verdict": "broken",
+     "note": "Price element on product cards is now a fixed 64px wide with overflow hidden + nowrap. Any price of $100+ is cut off: 'Ember Thermal Jersey' shows '$125.0(' (last digit clipped), same for $145.00/$119.00/$159.00; and the strike-through compare-at price is completely hidden on discounted cards (Ridgeline Insulated Gloves shows only '$68.00', main shows '$68.00 $85.00'). 5 of 18 cards on /products clipped (scrollWidth 73\u2013139px vs clientWidth 64px); 0 on main."
+    },
+    {
+     "flow": "browse",
+     "device": "mobile",
+     "browser": "webkit",
+     "verdict": "broken",
+     "note": "Same truncation at 390px (2-column grid) and 834px tablet; reproduced in Firefox and WebKit. Featured cards on the home page use the same component and are affected too."
+    },
+    {
+     "flow": "product",
+     "device": "desktop",
+     "browser": "chromium",
+     "verdict": "ok",
+     "note": "Product detail page price (separate Price instance without the width class), cart, drawer, checkout and order totals are unaffected and match main."
+    },
+    {
+     "flow": "cart",
+     "device": "mobile",
+     "browser": "chromium",
+     "verdict": "ok",
+     "note": "Add 2 products, qty +/-, reload persistence, drawer subtotal and totals identical to main (iPhone 13 emulation)."
+    },
+    {
+     "flow": "checkout",
+     "device": "desktop",
+     "browser": "webkit",
+     "verdict": "ok",
+     "note": "Validation errors, coupon GAUNTLET10, express shipping, declined card 4000\u20260002, successful order and order page identical to main."
+    },
+    {
+     "flow": "auth",
+     "device": "tablet",
+     "browser": "chromium",
+     "verdict": "ok",
+     "note": "Login/signup/logout, guest cart kept after login, settings save+reload, newsletter subscribe+persist identical to main (834px)."
+    },
+    {
+     "flow": "mobile-nav",
+     "device": "mobile",
+     "browser": "chromium",
+     "verdict": "ok",
+     "note": "Hamburger opens full-height menu, aria-expanded toggles, Escape closes, link navigates and closes menu \u2014 same as main."
+    }
+   ]
+  },
+  {
+   "branch": "control/01-pricing-sum-helper",
+   "blind": "pr/29",
+   "observations": [
+    {
+     "flow": "cart",
+     "device": "desktop",
+     "browser": "chromium",
+     "verdict": "ok",
+     "note": "Refactored computeTotals: drawer subtotal ($136.00 after 2\u00d7 gloves, $295.00 after adding shell), cart subtotal/shipping/tax/total ($295.00 / Free / $23.60 / $318.60), qty increase ($490.32) and reload all identical to main; header cart badge count unchanged."
+    },
+    {
+     "flow": "checkout",
+     "device": "desktop",
+     "browser": "chromium",
+     "verdict": "ok",
+     "note": "Checkout summary with GAUNTLET10 (\u2212$29.50, $286.74), express (+$19.00, $305.74), and the resulting order page totals identical to main; direct POST /api/checkout for 4 carts (percent coupon+express, FREESHIP, single item under threshold, 10\u00d7 item) returned the same totals as main (30574, 11016, 4472, 12960 cents)."
+    },
+    {
+     "flow": "cart",
+     "device": "mobile",
+     "browser": "firefox",
+     "network": "slow-3g",
+     "verdict": "ok",
+     "note": "Cart/checkout totals identical on mobile, tablet, Firefox, WebKit and under slow network; itemCount on the account 'Recent orders' list unchanged."
+    },
+    {
+     "flow": "browse",
+     "device": "desktop",
+     "browser": "chromium",
+     "verdict": "ok",
+     "note": "Home and /products render 6/18 cards, filters/sort/max/instock and search suggestions identical to main."
+    },
+    {
+     "flow": "auth",
+     "device": "tablet",
+     "browser": "chromium",
+     "verdict": "ok",
+     "note": "Login/signup/logout, guest cart kept after login, settings save+reload, newsletter subscribe+persist identical to main (834px)."
+    },
+    {
+     "flow": "mobile-nav",
+     "device": "mobile",
+     "browser": "chromium",
+     "verdict": "ok",
+     "note": "Hamburger opens full-height menu, aria-expanded toggles, Escape closes, link navigates and closes menu \u2014 same as main."
+    }
+   ]
+  },
+  {
+   "branch": "bug/05-cart-lost-after-login",
+   "blind": "pr/30",
+   "observations": [
+    {
+     "flow": "auth",
+     "device": "desktop",
+     "browser": "chromium",
+     "verdict": "broken",
+     "note": "Logging in wipes the shopping cart. Repro: as a guest add 'Trailhead Summer Gloves' (header badge 1, localStorage gs_cart_v1 has 1 line) -> Log in with demo@gauntlet.shop / password123 -> lands on /account but the header cart badge is gone, /cart shows 'Your cart is empty' and gs_cart_v1 is '[]' (the login API returns no `cart`, so the new code overwrites the guest cart with []). On main the item survives login."
+    },
+    {
+     "flow": "auth",
+     "device": "mobile",
+     "browser": "webkit",
+     "network": "slow-3g",
+     "verdict": "broken",
+     "note": "Same cart loss after login on iPhone emulation, tablet, Firefox and WebKit, and under slow network."
+    },
+    {
+     "flow": "checkout",
+     "device": "desktop",
+     "browser": "firefox",
+     "verdict": "broken",
+     "note": "Signup from /signup?next=/checkout with 1 item in the cart lands on /checkout showing 'There's nothing to check out yet' (checkout-empty) instead of the prefilled form with the item that main shows; same for the account-prefill checkout after login."
+    },
+    {
+     "flow": "auth",
+     "device": "desktop",
+     "browser": "chromium",
+     "verdict": "ok",
+     "note": "Login itself still succeeds: wrong password shows 'Invalid email or password.', correct login lands on /account with 'Hi, Demo Rider', header shows 'Demo\u2019s account' immediately (hard navigation), logout and settings save/persist work as on main."
+    },
+    {
+     "flow": "browse",
+     "device": "desktop",
+     "browser": "chromium",
+     "verdict": "ok",
+     "note": "Home and /products render 6/18 cards, filters/sort/max/instock and search suggestions identical to main."
+    },
+    {
+     "flow": "cart",
+     "device": "mobile",
+     "browser": "chromium",
+     "verdict": "ok",
+     "note": "Add 2 products, qty +/-, reload persistence, drawer subtotal and totals identical to main (iPhone 13 emulation)."
+    },
+    {
+     "flow": "mobile-nav",
+     "device": "mobile",
+     "browser": "chromium",
+     "verdict": "ok",
+     "note": "Hamburger opens full-height menu, aria-expanded toggles, Escape closes, link navigates and closes menu \u2014 same as main."
+    }
+   ]
+  }
+ ]
+}
