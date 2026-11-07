@@ -180,6 +180,8 @@ export interface ProductQuery {
   inStock?: boolean;
 }
 
+const byPrice = (a: Product, b: Product) => b.price - a.price;
+
 export function searchProducts(query: ProductQuery): Product[] {
   const q = (query.q ?? "").trim().toLowerCase();
   let list = PRODUCTS.filter((p) => {
@@ -194,10 +196,10 @@ export function searchProducts(query: ProductQuery): Product[] {
   });
   switch (query.sort) {
     case "price-asc":
-      list = [...list].sort((a, b) => a.price - b.price);
+      list = [...list].sort(byPrice);
       break;
     case "price-desc":
-      list = [...list].sort((a, b) => b.price - a.price);
+      list = [...list].sort(byPrice).reverse();
       break;
     case "rating":
       list = [...list].sort((a, b) => b.rating - a.rating);
