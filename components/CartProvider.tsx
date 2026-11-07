@@ -37,9 +37,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
   const [lastAdded, setLastAdded] = useState<LineItem | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [count, setCount] = useState(0);
 
   useEffect(() => {
-    setItems(readStorage());
+    const stored = readStorage();
+    setItems(stored);
+    setCount(stored.reduce((n, i) => n + i.quantity, 0));
     setHydrated(true);
   }, []);
 
@@ -56,6 +59,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       next[idx] = { ...next[idx], quantity: next[idx].quantity + quantity };
       return next;
     });
+    setCount((c) => c + quantity);
     setLastAdded({ ...item, quantity });
     setDrawerOpen(true);
   }, []);
@@ -79,7 +83,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<CartContextValue>(
     () => ({
       items,
-      count: items.reduce((n, i) => n + i.quantity, 0),
+      count,
       hydrated,
       lastAdded,
       drawerOpen,
@@ -90,7 +94,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       openDrawer,
       closeDrawer,
     }),
-    [items, hydrated, lastAdded, drawerOpen, add, setQuantity, remove, clear, openDrawer, closeDrawer],
+    [items, count, hydrated, lastAdded, drawerOpen, add, setQuantity, remove, clear, openDrawer, closeDrawer],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
