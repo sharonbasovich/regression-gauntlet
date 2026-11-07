@@ -90,6 +90,8 @@ Each manifest entry records: `class`, `severity`, affected `flows`, `devices`, `
 
 ## Pointing an AI tester at it
 
+Live production build of `main`: **https://regression-gauntlet.vercel.app** (Vercel, Deployment Protection off). Every PR branch gets a public Vercel preview URL (`regression-gauntlet-git-<branch-slug>-sharon-basovichs-projects.vercel.app`, also linked from the PR's Vercel bot comment), so a PR-vs-production tester can be pointed at this repo as-is.
+
 Most PR-check tools want a production URL to map and a preview URL per PR to compare against. With Vercel:
 
 1. Fork or import the repo in Vercel (framework preset: Next.js; no environment variables needed). `main` becomes production.
