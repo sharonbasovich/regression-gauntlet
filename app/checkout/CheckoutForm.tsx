@@ -65,6 +65,8 @@ export function CheckoutForm({ defaults }: { defaults: Defaults }) {
       setCouponMessage(`“${couponInput.trim()}” isn't a valid code.`);
       return;
     }
+    const summaryEl = document.getElementById("summary-heading")?.closest("aside") as (HTMLElement & { scrollIntoViewIfNeeded: (center?: boolean) => void }) | null;
+    summaryEl?.scrollIntoViewIfNeeded(true);
     setCoupon(found);
     setCouponMessage(`${found.code} applied — ${found.label}.`);
   }
