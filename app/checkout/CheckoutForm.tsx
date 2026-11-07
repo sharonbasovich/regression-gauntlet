@@ -30,6 +30,7 @@ export function CheckoutForm({ defaults }: { defaults: Defaults }) {
   const router = useRouter();
   const { items, hydrated, clear } = useCart();
   const formRef = useRef<HTMLFormElement>(null);
+  const inFlight = useRef(false);
   const [values, setValues] = useState<Record<Fields, string>>({
     email: defaults.email,
     fullName: defaults.fullName,
@@ -86,6 +87,8 @@ export function CheckoutForm({ defaults }: { defaults: Defaults }) {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (inFlight.current) return;
+    inFlight.current = true;
     setServerError(null);
     const er = validate();
     setErrors(er);
@@ -119,6 +122,7 @@ export function CheckoutForm({ defaults }: { defaults: Defaults }) {
     } catch {
       setServerError("Network error — your card was not charged. Please try again.");
     } finally {
+      inFlight.current = false;
       setSubmitting(false);
     }
   }
