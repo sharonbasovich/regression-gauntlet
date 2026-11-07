@@ -7,7 +7,7 @@ export default function AboutPage() {
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
       <h1 className="text-3xl font-bold text-ink">We ride to work too.</h1>
       <p className="mt-4 text-lg leading-relaxed text-ink/80">
-        Gauntlet Shop started in a shared garage in 2017 with one product — a pair of gloves that didn&apos;t soak through on the ride in. Everything we make since then has followed the same rule: build it for the person who rides every day, not the person who rides on Sunday.
+        Gauntlet Shop started in a shared garage in 2017 with one product — a pair of gloves that didn&apos;t soak through on the ride in. Everything we make since then has followed the same rule: build it for the person who rides every day, not the person who rides on Sunday. We ship every order from our workshop in Montréal.
       </p>
       <section id="sustainability" className="mt-10">
         <h2 className="text-xl font-semibold text-ink">Sustainability</h2>
